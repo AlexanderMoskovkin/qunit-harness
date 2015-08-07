@@ -1,0 +1,17 @@
+{
+  "dependencies": {
+    "babel-runtime": "^5.8.20",
+    "express": "^4.13.3",
+    "hogan-express": "^0.5.2",
+    "mustache": "^2.1.3",
+    "promise": "^7.0.4"
+  },
+  "devDependencies": {
+    "babel-eslint": "^4.0.5",
+    "del": "^1.2.0",
+    "gulp": "^3.9.0",
+    "gulp-babel": "^5.2.0",
+    "gulp-eslint": "^1.0.0",
+    "merge-stream": "^0.1.8"
+  }
+}

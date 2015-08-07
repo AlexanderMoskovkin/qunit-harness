@@ -1,0 +1,8 @@
+{
+  "env": {
+    /* "qunit": true Not implemented */
+  },
+  "rules": {
+    "newline-after-var": [0, "always"]
+  }
+}

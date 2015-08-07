@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link type="text/css" rel=stylesheet href="/qunit-1.18.0.css">
+
+    <script type="text/javascript" src="/jquery.js"></script>
+    <script type="text/javascript" src="/qunit-1.18.0.js"></script>
+
+    <script type="text/javascript">
+            {{{ globals }}}
+    </script>
+
+    {{# scripts}}
+        <script type="text/javascript" src="{{{src}}}"></script>
+    {{/scripts}}
+
+</head>
+<body>
+<ol id=qunit-tests></ol>
+
+{{{ markup }}}
+
+<script type="text/javascript">
+        {{{ test }}}
+</script>
+</body>
+</html>

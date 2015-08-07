@@ -1,0 +1,1 @@
+window.resourceLoaded = true;

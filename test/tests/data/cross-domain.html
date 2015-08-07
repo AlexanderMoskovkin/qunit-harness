@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <script type="text/javascript" src="/jquery.js"></script>
+</head>
+<body>
+<script>
+    var pingUrl = null;
+
+    window.onmessage = function (e) {
+        $.ajax({
+            type:    'POST',
+            url:     '/ping/' + e.data,
+            success: function (data) {
+                window.top.postMessage({
+                    type:     'pingResponse',
+                    response: data
+                }, '*');
+            }
+        });
+    };
+
+    $(document).ready(function () {
+        window.top.postMessage({
+            type: 'ready'
+        }, '*');
+    });
+</script>
+</body>
+</html>

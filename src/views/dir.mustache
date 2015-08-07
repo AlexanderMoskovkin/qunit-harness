@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>QUnit</title>
+</head>
+<body>
+<a href="/">Back to Top</a>
+
+<h3>Dirs</h3>
+
+<ul style="list-style-type: none">
+    {{# dirs }}
+        <li>
+            <a href="{{currentDir}}/{{ dirs }}">{{ dirs }}</a>
+        </li>
+    {{/dirs}}
+</ul>
+
+<h3>Tests</h3>
+<ul>
+    {{# files}}
+        <a href="{{currentDir}}/{{files}}">{{files}}</a>
+    {{/files}}
+</ul>
+
+</body>
+</html>
