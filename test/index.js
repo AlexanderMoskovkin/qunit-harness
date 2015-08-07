@@ -14,21 +14,16 @@ var ASSET_PATH = path.join(TESTS_DIR, './resources/script.js');
 
 var script = fs.readFileSync(ASSET_PATH, 'utf-8');
 
+function configApp (app) {
+    app.post('/custom/:data', function (req, res) {
+        res.send(req.params['data']);
+    });
+}
+
 var server = new QUnitServer()
     .fixtures(FIXTURES_PATH)
     .markup(MARKUP_PATH)
     .data(DATA_PATH)
     .scripts({ src: '/script.js', content: script })
+    .configApp(configApp)
     .create();
-
-/*
-var express = require('express');
-var http    = require('http');
-
-var app = express();
-http.createServer(app).listen(3000);
-
-app.get('/fixtures/!*', function (req, res) {
-    res.end('/fixtures/!*');
-});
-*/

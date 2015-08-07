@@ -12,7 +12,7 @@
     window.onmessage = function (e) {
         $.ajax({
             type:    'POST',
-            url:     '/ping/' + e.data,
+            url:     e.data,
             success: function (data) {
                 window.top.postMessage({
                     type:     'pingResponse',

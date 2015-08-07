@@ -176,6 +176,13 @@ export default class QUnitServer {
         return this;
     }
 
+    configApp (config) {
+        config(this.app);
+        config(this.crossDomainApp);
+
+        return this;
+    }
+
     create () {
         if (!this.fixturesPath)
             throw 'fixtures path is not defined';

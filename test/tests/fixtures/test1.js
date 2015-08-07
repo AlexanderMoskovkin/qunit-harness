@@ -57,12 +57,12 @@ asyncTest('test cross-domain iframe', function () {
 
     function onmessage (e) {
         if (e.data.type === 'ready')
-            $iframe[0].contentWindow.postMessage(timeout, '*');
+            $iframe[0].contentWindow.postMessage('/ping/' + timeout, '*');
 
         if (e.data.type === 'pingResponse') {
             strictEqual(e.data.response, timeout.toString());
 
-            window.removeEventListener(onmessage);
+            window.removeEventListener('message', onmessage);
             $iframe.remove();
             start();
         }
@@ -84,4 +84,39 @@ asyncTest('test resources', function () {
             start();
         })
         .appendTo('body');
+});
+
+asyncTest('configure app', function () {
+    expect(2);
+
+    var $iframe = $('<iframe></iframe>')
+        .attr('src', window.QUnitGlobals.crossDomainHostname + '/data/cross-domain.html')
+        .appendTo('body');
+
+    var data              = 'test-data';
+    var customUrl         = '/custom/' + data;
+    var expectedResponses = 2;
+
+    function onResponse (resData) {
+        strictEqual(resData, data);
+
+        if (!--expectedResponses)
+            start();
+    }
+
+    $.post(customUrl, onResponse);
+
+    function onmessage (e) {
+        if (e.data.type === 'ready')
+            $iframe[0].contentWindow.postMessage(window.QUnitGlobals.crossDomainHostname + customUrl, '*');
+
+        if (e.data.type === 'pingResponse') {
+            window.removeEventListener('message', onmessage);
+            $iframe.remove();
+
+            onResponse(e.data.response);
+        }
+    }
+
+    window.addEventListener('message', onmessage);
 });
