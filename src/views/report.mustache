@@ -37,5 +37,45 @@
 {{/failed}}
 
 <h2><a href="/run-dir/{{{encodedTaskPath}}}">Restart</a></h2>
+
+<!-- Sauce labs report -->
+<script type="text/javascript">
+    var passedCount = {{{passed}}};
+    var totalCount = {{{total}}};
+    var failedCount = {{{failed}}};
+
+    var res = {
+        passed: passedCount,
+        failed: failedCount,
+        total:  totalCount,
+        errors: []
+    };
+
+    var failedTest = null;
+    var taskPath = null;
+
+        {{#failedTaskReports}}
+        taskPath = "{{{name}}}";
+            {{#result}}
+                {{#tests}}
+                    {{#failed}}
+                    failedTest = {
+                        testPath: taskPath,
+                        testName: "{{{name}}}"
+                    };
+                        {{#assertions}}
+                            {{#failed}}
+                                {{#message}}failedTest.customMessage = "{{{message}}}";{{/message}}
+                                {{#expected}}failedTest.expected = "{{{expected}}}";{{/expected}}
+                                {{#actual}}failedTest.actual = "{{{actual}}}";{{/actual}}
+                            {{/failed}}
+                        {{/assertions}}
+                    res.errors.push(failedTest);
+                    {{/failed}}
+                {{/tests}}
+            {{/result}}
+        {{/failedTaskReports}}
+    window.global_test_results = res;
+</script>
 </body>
 </html>

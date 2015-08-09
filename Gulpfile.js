@@ -41,3 +41,32 @@ gulp.task('lint', function () {
 gulp.task('test', ['lint', 'build', 'copy-vendor'], function () {
     require('./test/index');
 });
+
+gulp.task('saucelabs', ['lint', 'build', 'copy-vendor'], function (done) {
+    var browsers = [{
+        platform:    'Windows 10',
+        browserName: 'chrome'
+    }];
+
+    var sauceLabsSettings = {
+        username:  'amtestcafehammerhead',
+        accessKey: '694a3135-48f9-4fc1-a033-9560c55bced7',
+        build:     'build',
+        tags:      'master',
+        browsers:  browsers,
+        name:      'QUnit tests'
+    };
+
+    var server = require('./test/index');
+
+    function testsDone (err) {
+        server.close();
+        done(err);
+    }
+
+    server
+        .saucelabs(sauceLabsSettings)
+        .run()
+        .then(testsDone)
+        .catch(testsDone);
+});

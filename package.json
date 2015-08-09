@@ -2,10 +2,13 @@
   "dependencies": {
     "babel-runtime": "^5.8.20",
     "body-parser": "^1.13.3",
+    "chalk": "^1.1.0",
     "express": "^4.13.3",
     "hogan-express": "^0.5.2",
     "mustache": "^2.1.3",
-    "promise": "^7.0.4"
+    "promise": "^7.0.4",
+    "request": "^2.60.0",
+    "sauce-tunnel": "^2.2.3"
   },
   "devDependencies": {
     "babel-eslint": "^4.0.5",

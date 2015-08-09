@@ -20,7 +20,7 @@ function configApp (app) {
     });
 }
 
-var server = new QUnitServer()
+module.exports = new QUnitServer()
     .fixtures(FIXTURES_PATH)
     .markup(MARKUP_PATH)
     .data(DATA_PATH)

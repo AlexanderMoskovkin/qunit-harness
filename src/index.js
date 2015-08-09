@@ -9,6 +9,9 @@ import readDir from './utils/read-dir';
 import getTests from './utils/get-tests';
 import pathToUrl from './utils/path-to-url';
 
+import * as saucelabs from './saucelabs/saucelabs';
+import reportSauceLabsTests from './saucelabs/report';
+
 
 const VIEWS_PATH                = path.join(__dirname, 'views');
 const GLOBALS_TEMPLATE_PATH     = path.join(__dirname, 'templates/globals.mustache');
@@ -56,6 +59,9 @@ export default class QUnitServer {
         this.app            = express();
         this.crossDomainApp = express();
 
+        this.appServer            = null;
+        this.crossDomainAppServer = null;
+
         this.app.engine('mustache', hoganExpress);
         this.app.set('views', VIEWS_PATH);
         this.app.set('view engine', 'mustache');
@@ -77,11 +83,14 @@ export default class QUnitServer {
 
         this.tasks        = {};
         this.tasksCounter = 0;
+
+        this.sauselabsSettings = null;
+        this.sauselabsTunnel   = null;
     }
 
     _createServers () {
-        http.createServer(this.app).listen(this.port);
-        http.createServer(this.crossDomainApp).listen(this.crossDomainPort);
+        this.appServer            = http.createServer(this.app).listen(this.port);
+        this.crossDomainAppServer = http.createServer(this.crossDomainApp).listen(this.crossDomainPort);
     }
 
     async _runTest (res, testPath, taskId) {
@@ -114,7 +123,7 @@ export default class QUnitServer {
     }
 
     async _runDir (res, dir) {
-        var relativeDir = path.relative('/fixtures', dir + '/');
+        var relativeDir = path.relative('/fixtures', '/' + dir + '/');
         var testsPath   = path.join(this.fixturesPath, relativeDir);
         var tests       = await getTests(testsPath, path.join(this.fixturesPath));
 
@@ -142,7 +151,6 @@ export default class QUnitServer {
             return res.end();
 
         task.completed++;
-
         task.reports.push({
             name:   pathToUrl(path.join('/fixtures', task.tests[0])),
             result: report
@@ -270,5 +278,53 @@ export default class QUnitServer {
         this._createServers();
         this._setupRoutes();
         return this;
+    }
+
+    saucelabs (settings) {
+        var curSettings = this.sauselabsSettings || {};
+
+        this.sauselabsSettings = {
+            username:  settings.username || curSettings.username || '',
+            accessKey: settings.accessKey || curSettings.accessKey || '',
+            build:     settings.build || curSettings.build || 'build',
+            tags:      settings.tags || curSettings.tags || 'master',
+            browsers:  settings.browsers || curSettings.browsers || {},
+            name:      settings.name || curSettings.name || 'QUnit tests',
+            urls:      [this.hostname + '/run-dir/fixtures'],
+            timeout:   settings.timeout || curSettings.timeout || 30
+        };
+
+        return this;
+    }
+
+    close () {
+        this.appServer.close();
+        this.crossDomainAppServer.close();
+    }
+
+    async run () {
+        if (!this.sauselabsSettings)
+            return;
+
+        var report = null;
+        var error  = null;
+
+        var tunnel = await saucelabs.openTunnel(this.sauselabsSettings);
+
+        try {
+            report = await saucelabs.run(this.sauselabsSettings);
+        }
+        catch (err) {
+            error = err;
+        }
+        finally {
+            await saucelabs.closeTunnel(tunnel);
+        }
+
+        if (error)
+            throw error;
+
+        if (!reportSauceLabsTests(report))
+            throw 'tests failed';
     }
 };
