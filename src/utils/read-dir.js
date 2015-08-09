@@ -2,10 +2,8 @@ import path from 'path';
 import * as fs from './fs';
 
 export default async function (dirPath) {
-    var result = {
-        dirs:  [],
-        files: []
-    };
+    var dirs  = [];
+    var files = [];
 
     async function processDirItem (item) {
         var subpath = path.join(dirPath, item);
@@ -13,18 +11,18 @@ export default async function (dirPath) {
         var stats = await fs.stat(subpath);
 
         if (stats.isDirectory())
-            result.dirs.push(item);
+            dirs.push(item);
 
         if (path.extname(subpath) === '.js')
-            result.files.push(item);
+            files.push(item);
     }
 
     var dirItems = await fs.readdir(dirPath);
 
     await Promise.all(dirItems.map(processDirItem));
 
-    result.dirs.sort();
-    result.files.sort();
+    dirs.sort();
+    files.sort();
 
-    return result;
+    return { dirs, files };
 }

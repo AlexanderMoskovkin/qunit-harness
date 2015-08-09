@@ -1,0 +1,60 @@
+var pageErrorMessage = null;
+var done             = false;
+var report           = {
+    path:  window.QUnitGlobals._path,
+    tests: []
+};
+
+var nativeXMLHttpRequest = window.XMLHttpRequest;
+
+QUnit.log(function (res) {
+    var testReport = report.tests.filter(function (item) {
+        return item.name === res.name;
+    })[0];
+
+    if (!testReport) {
+        testReport = {
+            name:       res.name,
+            failed:     false,
+            assertions: []
+        };
+
+        report.tests.push(testReport);
+    }
+
+    testReport.assertions.push({
+        failed:   !res.result,
+        module:   res.module,
+        actual:   res.actual,
+        expected: res.expected,
+        message:  res.message,
+        runtime:  res.runtime
+    });
+
+    if (!res.result)
+        testReport.failed = true;
+});
+
+QUnit.done(function (res) {
+    if (!window.QUnitGlobals._taskId || done)
+        return;
+
+    done = true;
+
+    report.failed  = res.failed;
+    report.passed  = res.passed;
+    report.total   = res.total;
+    report.runtime = res.runtime;
+
+    window.XMLHttpRequest = nativeXMLHttpRequest;
+
+    $.ajax({
+        url:         '/test-done/' + window.QUnitGlobals._taskId,
+        type:        'POST',
+        contentType: 'application/json',
+        data:        JSON.stringify({ report: report }),
+        success:     function (url) {
+            document.location = url + '?taskId=' + window.QUnitGlobals._taskId;
+        }
+    });
+});

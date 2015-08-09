@@ -1,3 +1,4 @@
+import bodyParser from 'body-parser';
 import express from 'express';
 import http from 'http';
 import path from 'path';
@@ -5,11 +6,13 @@ import mustache from 'mustache';
 import hoganExpress from 'hogan-express';
 import * as fs from './utils/fs';
 import readDir from './utils/read-dir';
+import getTests from './utils/get-tests';
 import pathToUrl from './utils/path-to-url';
 
 
-const VIEWS_PATH            = path.join(__dirname, 'views');
-const GLOBALS_TEMPLATE_PATH = path.join(__dirname, 'globals.mustache');
+const VIEWS_PATH                = path.join(__dirname, 'views');
+const GLOBALS_TEMPLATE_PATH     = path.join(__dirname, 'templates/globals.mustache');
+const QUNIT_SETUP_TEMPLATE_PATH = path.join(__dirname, 'templates/qunit-setup.mustache');
 
 
 //Globals
@@ -59,18 +62,21 @@ export default class QUnitServer {
 
         this.app.use(express.static(path.join(__dirname, '/vendor')));
         this.crossDomainApp.use(express.static(path.join(__dirname, '/vendor')));
+        this.app.use(bodyParser.json());
 
-        var globalsTemplate = fs.readfileSync(GLOBALS_TEMPLATE_PATH, 'utf-8');
+        this.globalsTemplate    = fs.readfileSync(GLOBALS_TEMPLATE_PATH, 'utf-8');
+        this.qunitSetupTemplate = fs.readfileSync(QUNIT_SETUP_TEMPLATE_PATH, 'utf-8');
 
-        this.globalsSciprt = mustache.render(globalsTemplate, {
-            hostname:            'http://localhost:' + this.port,
-            crossDomainHostname: 'http://localhost:' + this.crossDomainPort
-        });
+        this.hostname            = 'http://localhost:' + this.port;
+        this.crossDomainHostname = 'http://localhost:' + this.crossDomainPort;
 
         this.testResources = {
             scripts: [],
             css:     []
         };
+
+        this.tasks        = {};
+        this.tasksCounter = 0;
     }
 
     _createServers () {
@@ -78,21 +84,90 @@ export default class QUnitServer {
         http.createServer(this.crossDomainApp).listen(this.crossDomainPort);
     }
 
-    async _runTest (res, testPath) {
+    async _runTest (res, testPath, taskId) {
         var test = await fs.readfile(testPath);
 
         var markupPath  = testPath.replace(this.fixturesPath, this.markupPath).replace('.js', '.html');
         var markupStats = await fs.stat(markupPath);
         var markup      = markupStats ? await fs.readfile(markupPath) : '';
 
+        var hostname            = this.hostname;
+        var crossDomainHostname = this.crossDomainHostname;
+        var relativeTestPath    = path.relative(this.fixturesPath, testPath);
+        var globals             = mustache.render(this.globalsTemplate, {
+            crossDomainHostname: crossDomainHostname,
+            path:                pathToUrl(relativeTestPath),
+            taskId:              taskId,
+            hostname:            hostname
+        });
+
         res.locals = {
-            test:    test,
-            markup:  markup,
-            globals: this.globalsSciprt,
-            scripts: this.testResources.scripts,
-            css:     this.testResources.css
+            test:       test,
+            taskId:     taskId || '',
+            markup:     markup,
+            globals:    globals,
+            qunitSetup: mustache.render(this.qunitSetupTemplate, { taskId }),
+            scripts:    this.testResources.scripts,
+            css:        this.testResources.css
         };
         res.render('test');
+    }
+
+    async _runDir (res, dir) {
+        var relativeDir = path.relative('/fixtures', dir + '/');
+        var testsPath   = path.join(this.fixturesPath, relativeDir);
+        var tests       = await getTests(testsPath, path.join(this.fixturesPath));
+
+        if (!tests.length)
+            return res.redirect(302, this.fixturesPath + dir);
+
+        var task = {
+            id:        ++this.tasksCounter,
+            path:      path.join('/fixtures', relativeDir),
+            tests:     tests,
+            total:     tests.length,
+            completed: 0,
+            reports:   []
+        };
+
+        this.tasks[task.id] = task;
+
+        await this._runTest(res, path.join(this.fixturesPath, tests[0]), task.id);
+    }
+
+    _onTestDone (res, report, taskId) {
+        var task = this.tasks[taskId];
+
+        if (task.completed === task.total)
+            return res.end();
+
+        task.completed++;
+
+        task.reports.push({
+            name:   pathToUrl(path.join('/fixtures', task.tests[0])),
+            result: report
+        });
+
+        task.tests.shift();
+
+        res.end(task.tests.length ? '/fixtures/' + pathToUrl(task.tests[0]) : '/report');
+    }
+
+    _onReportRequest (res, taskId) {
+        var task              = this.tasks[taskId];
+        var failedTaskReports = task.reports.filter(report => report.result.failed);
+
+        res.locals = {
+            taskPath:          task.path,
+            encodedTaskPath:   encodeURIComponent(task.path),
+            total:             task.total,
+            completed:         task.completed,
+            passed:            task.completed - failedTaskReports.length,
+            failed:            failedTaskReports.length,
+            failedTaskReports: failedTaskReports
+        };
+
+        res.render('report');
     }
 
     async _onResourceRequest (req, res, basePath) {
@@ -108,9 +183,10 @@ export default class QUnitServer {
             var { dirs, files } = await readDir(resourcePath);
 
             res.locals = {
-                currentDir: req.path,
-                dirs:       dirs,
-                files:      files
+                currentDir:        req.path,
+                encodedCurrentDir: encodeURIComponent(req.path),
+                dirs:              dirs,
+                files:             files
             };
 
             return res.render('dir');
@@ -119,7 +195,7 @@ export default class QUnitServer {
         var ext = path.extname(resourcePath);
 
         if (ext === '.js' && resourcePath.indexOf(this.fixturesPath) > -1)
-            return await this._runTest(res, resourcePath);
+            return await this._runTest(res, resourcePath, req.query['taskId']);
 
         res.set('Content-Type', contentTypes[ext]);
         res.send(await fs.readfile(resourcePath));
@@ -131,6 +207,10 @@ export default class QUnitServer {
         this.crossDomainApp.get('/*', preventCaching);
 
         this.app.get('/', (req, res) => res.redirect('/fixtures'));
+
+        this.app.get('/run-dir/:dir', (req, res) => this._runDir(res, decodeURIComponent(req.params['dir'])));
+        this.app.get('/report', (req, res) => this._onReportRequest(res, req.query['taskId']));
+        this.app.post('/test-done/:id', (req, res) => this._onTestDone(res, req.body.report, req.params['id']));
 
         this.app.get('/fixtures', (req, res) => this._onResourceRequest(req, res, this.fixturesPath));
         this.app.get('/fixtures/*', (req, res) => this._onResourceRequest(req, res, this.fixturesPath));

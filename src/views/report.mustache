@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title></title>
+</head>
+<body>
+<h1>Results:</h1>
+
+<h2><a href="{{{path}}}">{{{path}}}</a></h2>
+
+<b>Total: </b> {{{total}}} <br/>
+<b>Completed: </b> {{{completed}}} <br/>
+<b>Success: </b> {{{passed}}} <br/>
+
+{{#failed}}
+    <h2>Failed:</h2>
+    {{#failedTaskReports}}
+        ----------<a href="{{{name}}}" target="_blank"><b>{{{name}}}</b></a>----------<br/>
+        {{#result}}
+            {{#tests}}
+                {{#failed}}
+                    <b>Test name:</b> {{{name}}} <br/>
+
+                    {{#assertions}}
+                        {{#failed}}
+                            {{#module}}<b>Module: </b>{{{module}}}{{/module}}<br/>
+                            {{#message}}<b>Message: </b>{{{message}}}{{/message}}<br/>
+                            {{#expected}}<b>Expected: </b>{{{expected}}}{{/expected}}<br/>
+                            {{#actual}}<b>Actual: </b>{{{actual}}}{{/actual}}<br/><br/>
+                        {{/failed}}
+                    {{/assertions}}
+                {{/failed}}
+            {{/tests}}
+        {{/result}}
+    {{/failedTaskReports}}
+{{/failed}}
+
+<h2><a href="/run-dir/{{{encodedTaskPath}}}">Restart</a></h2>
+</body>
+</html>

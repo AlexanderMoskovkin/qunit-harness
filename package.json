@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "babel-runtime": "^5.8.20",
+    "body-parser": "^1.13.3",
     "express": "^4.13.3",
     "hogan-express": "^0.5.2",
     "mustache": "^2.1.3",

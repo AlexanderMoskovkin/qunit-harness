@@ -2,7 +2,6 @@ test('Simple test', function () {
     equal(1, 1);
 });
 
-
 test('test with markup', function () {
     var $element = $('#test-element');
 
