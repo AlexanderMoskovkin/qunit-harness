@@ -4,12 +4,7 @@
   "description": "A library to run qunit tests on the local machine and with the saucelabs account",
   "homepage": "https://github.com/AlexanderMoskovkin/qunit-harness",
   "bugs": "https://github.com/AlexanderMoskovkin/qunit-harness/issues",
-  "license": [
-    {
-      "type": "MIT",
-      "url": "https://raw.githubusercontent.com/AlexanderMoskovkin/qunit-harness/master/LICENSE"
-    }
-  ],
+  "license": "MIT",
   "author": {
     "name": "Alexander Moskovkin",
     "site": "https://github.com/AlexanderMoskovkin"
