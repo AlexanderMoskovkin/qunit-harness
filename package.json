@@ -1,4 +1,26 @@
 {
+  "name": "qunit-harness",
+  "version": "0.1.0",
+  "description": "A library to run qunit tests on the local machine and with the saucelabs account",
+  "homepage": "https://github.com/AlexanderMoskovkin/qunit-harness",
+  "bugs": "https://github.com/AlexanderMoskovkin/qunit-harness/issues",
+  "license": [
+    {
+      "type": "MIT",
+      "url": "https://raw.githubusercontent.com/AlexanderMoskovkin/qunit-harness/master/LICENSE"
+    }
+  ],
+  "author": {
+    "name": "Alexander Moskovkin",
+    "site": "https://github.com/AlexanderMoskovkin"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AlexanderMoskovkin/qunit-harness.git"
+  },
+  "engines": {
+    "node": ">= 0.10"
+  },
   "dependencies": {
     "babel-runtime": "^5.8.20",
     "body-parser": "^1.13.3",
@@ -20,5 +42,6 @@
   },
   "scripts": {
     "test": "gulp saucelabs"
-  }
+  },
+  "main": "./lib/index"
 }

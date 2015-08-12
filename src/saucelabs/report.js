@@ -2,7 +2,8 @@ import chalk from 'chalk';
 
 
 function checkFailures (results) {
-    var errors = [];
+    var globalErrors = [];
+    var testErrors   = [];
 
     results[0].forEach(function (platformResults) {
         var msg      = [];
@@ -15,8 +16,10 @@ function checkFailures (results) {
         msg.push(chalk.bold(failed ? chalk.red('FAILURES:') : chalk.green('OK:')));
         msg.push(platform);
 
-        if (runningError)
+        if (runningError) {
             msg.push(chalk.bold(platformResults.result));
+            globalErrors.push(platformResults.result);
+        }
         else {
             msg.push(chalk.bold('Total:'), platformResults.result.total);
             msg.push(chalk.bold('Failed:'), platformResults.result.failed);
@@ -27,15 +30,15 @@ function checkFailures (results) {
         if (platformResults.result.errors) {
             platformResults.result.errors.forEach(function (error) {
                 error.platform = platform;
-                errors.push(error);
+                testErrors.push(error);
             });
         }
     });
 
-    return errors;
+    return { globalErrors, testErrors };
 }
 
-function reportFailures (errors) {
+function reportTestFailures (errors) {
     console.log(chalk.bold.red('ERRORS:'));
 
     errors.forEach(function (error) {
@@ -57,10 +60,13 @@ function reportFailures (errors) {
 
 
 export default function (report) {
-    var errors = checkFailures(report);
+    var { testErrors, globalErrors } = checkFailures(report);
 
-    if (errors.length) {
-        reportFailures(errors);
+    if (globalErrors.length)
+        return false;
+
+    if (testErrors.length) {
+        reportTestFailures(testErrors);
         return false;
     }
 

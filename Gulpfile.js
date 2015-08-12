@@ -71,7 +71,8 @@ gulp.task('saucelabs', ['lint', 'build', 'copy-vendor'], function (done) {
         done(err);
     }
 
-    server.saucelabs(sauceLabsSettings)
+    server
+        .saucelabs(sauceLabsSettings)
         .tests(tests)
         .run()
         .then(testsDone)
