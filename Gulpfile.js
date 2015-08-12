@@ -1,10 +1,9 @@
-var path     = require('path');
-var del      = require('del');
-var gulp     = require('gulp');
-var babel    = require('gulp-babel');
-var eslint   = require('gulp-eslint');
-var merge    = require('merge-stream');
-var getTests = require('./lib/utils/get-tests');
+var path   = require('path');
+var del    = require('del');
+var gulp   = require('gulp');
+var babel  = require('gulp-babel');
+var eslint = require('gulp-eslint');
+var merge  = require('merge-stream');
 
 gulp.task('clean', function (cb) {
     del('lib', cb);
@@ -51,14 +50,19 @@ gulp.task('saucelabs', ['lint', 'build', 'copy-vendor'], function (done) {
     }];
 
     var sauceLabsSettings = {
-        username:  '***',
-        accessKey: '***',
+        username:  process.env.SAUCELABS_USERNAME,
+        accessKey: process.env.SAUCELABS_ACCESS_KEY,
         build:     'build',
         tags:      'master',
         browsers:  browsers,
         name:      'QUnit tests',
         timeout:   60
     };
+
+    var tests = ['/test1-test.js', '/test2-test/index-test.js', '/dir1/test3-test.js']
+        .map(function (item) {
+            return path.join(__dirname, '/test/tests/fixtures', item)
+        });
 
     var server = require('./test/index');
 
@@ -67,12 +71,9 @@ gulp.task('saucelabs', ['lint', 'build', 'copy-vendor'], function (done) {
         done(err);
     }
 
-    getTests(path.join(__dirname, '/test/tests/fixtures')).then(function (tests) {
-        server
-            .saucelabs(sauceLabsSettings)
-            .tests(tests)
-            .run()
-            .then(testsDone)
-            .catch(testsDone);
-    });
+    server.saucelabs(sauceLabsSettings)
+        .tests(tests)
+        .run()
+        .then(testsDone)
+        .catch(testsDone);
 });

@@ -17,5 +17,8 @@
     "gulp-babel": "^5.2.0",
     "gulp-eslint": "^1.0.0",
     "merge-stream": "^0.1.8"
+  },
+  "scripts": {
+    "test": "gulp saucelabs"
   }
 }
