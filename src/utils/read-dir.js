@@ -13,7 +13,7 @@ export default async function (dirPath) {
         if (stats.isDirectory())
             dirs.push(item);
 
-        if (path.extname(subpath) === '.js')
+        if (subpath.indexOf('-test.js') > -1)
             files.push(item);
     }
 
