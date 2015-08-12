@@ -1,12 +1,12 @@
 window.QUnitGlobals = {
     _taskId: "{{{taskId}}}",
-    _path: "{{path}}",
-    _fullPath: "{{testFullPath}}",
+    _path: "{{{path}}}",
+    _fullPath: "{{{testFullPath}}}",
 
     hostname: "{{{hostname}}}",
     crossDomainHostname: "{{{crossDomainHostname}}}",
 
     getResourceUrl: function (filePath) {
-        return '/test-resource/' + encodeURIComponent(filePath) + '?base=' + encodeURIComponent(window.QUnitGlobals._fullPath);
+        return '/test-resource/' + encodeURIComponent(filePath) + '?base=' + window.QUnitGlobals._fullPath;
     }
 };

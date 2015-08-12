@@ -51,7 +51,7 @@ function onCssRequest (req, res, content) {
 
 async function getFile (res, filePath) {
     res.set('Content-Type', contentTypes[path.extname(filePath)]);
-    res.send(await fs.readfile(filePath));
+    res.send(await fs.readfile(filePath, 'utf-8'));
 }
 
 //QUnitServer
@@ -258,7 +258,7 @@ export default class QUnitServer {
             var markupFileName = testPath.replace('-test.js', '.html');
 
             if (await fs.stat(markupFileName))
-                markup = await fs.readfile(markupFileName);
+                markup = await fs.readfile(markupFileName, 'utf-8');
         }
 
         var hostname            = this.hostname;
@@ -266,8 +266,8 @@ export default class QUnitServer {
         var relativeTestPath    = path.relative(this.basePath, testPath);
         var globals             = mustache.render(this.globalsTemplate, {
             crossDomainHostname: crossDomainHostname,
-            path:                pathToUrl(relativeTestPath),
-            testFullPath:        testPath.replace(/\\/g, '\\\\'),
+            path:                encodeURIComponent(pathToUrl(relativeTestPath)),
+            testFullPath:        encodeURIComponent(testPath.replace(/\\/g, '\\\\')),
             taskId:              taskId,
             hostname:            hostname
         });
