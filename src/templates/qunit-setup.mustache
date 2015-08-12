@@ -54,7 +54,7 @@ QUnit.done(function (res) {
         contentType: 'application/json',
         data:        JSON.stringify({ report: report }),
         success:     function (url) {
-            document.location = url + '?taskId=' + window.QUnitGlobals._taskId;
+            document.location = url;
         }
     });
 });

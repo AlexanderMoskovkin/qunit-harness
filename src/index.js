@@ -44,6 +44,15 @@ function onScriptRequest (req, res, content) {
     res.send(content);
 }
 
+function onCssRequest (req, res, content) {
+    res.setHeader('content-type', contentTypes['.css']);
+    res.send(content);
+}
+
+async function getFile (res, filePath) {
+    res.set('Content-Type', contentTypes[path.extname(filePath)]);
+    res.send(await fs.readfile(filePath));
+}
 
 //QUnitServer
 export default class QUnitServer {
@@ -51,10 +60,8 @@ export default class QUnitServer {
         this.port            = 1335;
         this.crossDomainPort = 1336;
         this.hostname        = 'http://localhost:' + this.port;
-        this.fixturesPath    = '';
-        this.markupPath      = '';
-        this.dataPath        = '';
-        this.currentDir      = '';
+
+        this.basePath = '';
 
         this.app            = express();
         this.crossDomainApp = express();
@@ -83,65 +90,93 @@ export default class QUnitServer {
 
         this.tasks        = {};
         this.tasksCounter = 0;
+        this.pendingTests = [];
 
         this.sauselabsSettings = null;
         this.sauselabsTunnel   = null;
     }
 
+
+    //Init
     _createServers () {
         this.appServer            = http.createServer(this.app).listen(this.port);
         this.crossDomainAppServer = http.createServer(this.crossDomainApp).listen(this.crossDomainPort);
     }
 
-    async _runTest (res, testPath, taskId) {
-        var test = await fs.readfile(testPath);
+    _setupRoutes () {
+        //Prevent caching
+        this.app.get('/*', preventCaching);
+        this.crossDomainApp.get('/*', preventCaching);
 
-        var markupPath  = testPath.replace(this.fixturesPath, this.markupPath).replace('.js', '.html');
-        var markupStats = await fs.stat(markupPath);
-        var markup      = markupStats ? await fs.readfile(markupPath) : '';
+        this.app.get('/', (req, res) => res.redirect('/fixtures'));
+        this.app.get('/run', (req, res) => this._runTests(res, this.pendingTests.map(item => item)));
+        this.app.get('/run-dir/:dir', (req, res) => this._runDir(res, decodeURIComponent(req.params['dir'])));
+        this.app.post('/test-done/:id', (req, res) => this._onTestDone(res, req.body.report, req.params['id']));
+        this.app.get('/next-test/:id', (req, res) => this._onNextTest(res, req.params['id']));
+        this.app.get('/report/:id', (req, res) => this._onReportRequest(res, req.params['id']));
 
-        var hostname            = this.hostname;
-        var crossDomainHostname = this.crossDomainHostname;
-        var relativeTestPath    = path.relative(this.fixturesPath, testPath);
-        var globals             = mustache.render(this.globalsTemplate, {
-            crossDomainHostname: crossDomainHostname,
-            path:                pathToUrl(relativeTestPath),
-            taskId:              taskId,
-            hostname:            hostname
-        });
+        this.app.get('/test-resource/:filePath', (req, res) => getFile(res, path.join(path.dirname(req.query['base']),
+            req.params['filePath'])));
+        this.crossDomainApp.get('/test-resource/:filePath', (req, res) => getFile(res, path.join(path.dirname(req.query['base']),
+            req.params['filePath'])));
 
-        res.locals = {
-            test:       test,
-            taskId:     taskId || '',
-            markup:     markup,
-            globals:    globals,
-            qunitSetup: mustache.render(this.qunitSetupTemplate, { taskId }),
-            scripts:    this.testResources.scripts,
-            css:        this.testResources.css
-        };
-        res.render('test');
+        this.app.get('/fixtures', (req, res) => this._onResourceRequest(req, res, this.basePath));
+        this.app.get('/fixtures/*', (req, res) => this._onResourceRequest(req, res, this.basePath));
+
+        this.app.all('/ping/:delay', onPingRequest);
+        this.crossDomainApp.all('/ping/:delay', onPingRequest);
     }
 
-    async _runDir (res, dir) {
-        var relativeDir = path.relative('/fixtures', '/' + dir + '/');
-        var testsPath   = path.join(this.fixturesPath, relativeDir);
-        var tests       = await getTests(testsPath, path.join(this.fixturesPath));
+    _registerScript (script) {
+        this.testResources.scripts.push(script);
 
-        if (!tests.length)
-            return res.redirect(302, this.fixturesPath + dir);
+        this.app.get(script.src, (req, res) => onScriptRequest(req, res, script.content));
+        this.crossDomainApp.get(script.src, (req, res) => onScriptRequest(req, res, script.content));
+    }
 
-        var task = {
-            id:        ++this.tasksCounter,
-            path:      path.join('/fixtures', relativeDir),
-            tests:     tests,
-            total:     tests.length,
-            completed: 0,
-            reports:   []
-        };
+    _registerCss (css) {
+        this.testResources.css.push(css);
 
-        this.tasks[task.id] = task;
+        this.app.get(css.src, (req, res) => onCssRequest(req, res, css.content));
+        this.crossDomainApp.get(css.src, (req, res) => onCssRequest(req, res, css.content));
+    }
 
-        await this._runTest(res, path.join(this.fixturesPath, tests[0]), task.id);
+
+    //Request handlers
+    async _onResourceRequest (req, res, basePath) {
+        var reqPath      = req.params[0] || '';
+        var resourcePath = path.join(basePath, reqPath);
+
+        var stats = await fs.stat(resourcePath);
+
+        if (!stats)
+            return res.send(404);
+
+        if (stats.isDirectory()) {
+            var { dirs, files } = await readDir(resourcePath);
+
+            dirs = dirs.map(dir => {
+                return { path: dir };
+            });
+
+            files = files.map(file => {
+                return { path: file };
+            });
+
+            res.locals = {
+                currentDir:        req.path,
+                encodedCurrentDir: encodeURIComponent(req.path),
+                dirs:              dirs,
+                files:             files
+            };
+
+            return res.render('dir');
+        }
+
+        if (resourcePath.indexOf('-test.js') > -1)
+            return await this._runTest(res, resourcePath, req.query['taskId']);
+
+        return await getFile(res, resourcePath);
     }
 
     _onTestDone (res, report, taskId) {
@@ -152,13 +187,22 @@ export default class QUnitServer {
 
         task.completed++;
         task.reports.push({
-            name:   pathToUrl(path.join('/fixtures', task.tests[0])),
+            name:   pathToUrl(path.join('/fixtures', path.relative(this.basePath, task.tests[0]))),
             result: report
         });
 
         task.tests.shift();
 
-        res.end(task.tests.length ? '/fixtures/' + pathToUrl(task.tests[0]) : '/report');
+        res.end('/next-test/' + taskId);
+    }
+
+    _onNextTest (res, taskId) {
+        var task = this.tasks[taskId];
+
+        if (task.tests.length)
+            return this._runTest(res, task.tests[0], taskId);
+
+        res.redirect('/report/' + taskId);
     }
 
     _onReportRequest (res, taskId) {
@@ -178,81 +222,72 @@ export default class QUnitServer {
         res.render('report');
     }
 
-    async _onResourceRequest (req, res, basePath) {
-        var reqPath      = req.params[0] || '';
-        var resourcePath = path.join(basePath, reqPath);
 
-        var stats = await fs.stat(resourcePath);
+    //Test running
+    async _runDir (res, dir) {
+        var relativeDir = path.relative('/fixtures', '/' + dir + '/');
+        var testsPath   = path.join(this.basePath, relativeDir);
+        var tests       = await getTests(testsPath, path.join(this.basePath));
 
-        if (!stats)
-            return res.send(404);
+        if (!tests.length)
+            return res.redirect(302, this.basePath + dir);
 
-        if (stats.isDirectory()) {
-            var { dirs, files } = await readDir(resourcePath);
+        await this._runTests(res, tests, relativeDir);
+    }
 
-            res.locals = {
-                currentDir:        req.path,
-                encodedCurrentDir: encodeURIComponent(req.path),
-                dirs:              dirs,
-                files:             files
-            };
+    async _runTests (res, tests, dir) {
+        var task = {
+            id:        ++this.tasksCounter,
+            path:      path.join('/fixtures', dir || ''),
+            tests:     tests,
+            total:     tests.length,
+            completed: 0,
+            reports:   []
+        };
 
-            return res.render('dir');
+        this.tasks[task.id] = task;
+
+        await this._runTest(res, tests[0], task.id);
+    }
+
+    async _runTest (res, testPath, taskId) {
+        var test   = await fs.readfile(testPath, 'utf-8');
+        var markup = '';
+
+        if (/-test$/.test(path.dirname(testPath))) {
+            var markupFileName = testPath.replace('-test.js', '.html');
+
+            if (await fs.stat(markupFileName))
+                markup = await fs.readfile(markupFileName);
         }
 
-        var ext = path.extname(resourcePath);
+        var hostname            = this.hostname;
+        var crossDomainHostname = this.crossDomainHostname;
+        var relativeTestPath    = path.relative(this.basePath, testPath);
+        var globals             = mustache.render(this.globalsTemplate, {
+            crossDomainHostname: crossDomainHostname,
+            path:                pathToUrl(relativeTestPath),
+            testFullPath:        testPath.replace(/\\/g, '\\\\'),
+            taskId:              taskId,
+            hostname:            hostname
+        });
 
-        if (ext === '.js' && resourcePath.indexOf(this.fixturesPath) > -1)
-            return await this._runTest(res, resourcePath, req.query['taskId']);
-
-        res.set('Content-Type', contentTypes[ext]);
-        res.send(await fs.readfile(resourcePath));
+        res.locals = {
+            markup:     markup,
+            test:       test,
+            taskId:     taskId || '',
+            globals:    globals,
+            qunitSetup: mustache.render(this.qunitSetupTemplate, { taskId }),
+            scripts:    this.testResources.scripts,
+            css:        this.testResources.css
+        };
+        res.render('test');
     }
 
-    _setupRoutes () {
-        //Prevent caching
-        this.app.get('/*', preventCaching);
-        this.crossDomainApp.get('/*', preventCaching);
 
-        this.app.get('/', (req, res) => res.redirect('/fixtures'));
-
-        this.app.get('/run-dir/:dir', (req, res) => this._runDir(res, decodeURIComponent(req.params['dir'])));
-        this.app.get('/report', (req, res) => this._onReportRequest(res, req.query['taskId']));
-        this.app.post('/test-done/:id', (req, res) => this._onTestDone(res, req.body.report, req.params['id']));
-
-        this.app.get('/fixtures', (req, res) => this._onResourceRequest(req, res, this.fixturesPath));
-        this.app.get('/fixtures/*', (req, res) => this._onResourceRequest(req, res, this.fixturesPath));
-        this.app.get('/markup', (req, res) => this._onResourceRequest(req, res, this.markupPath));
-        this.app.get('/markup/*', (req, res) => this._onResourceRequest(req, res, this.markupPath));
-        this.app.get('/data', (req, res) => this._onResourceRequest(req, res, this.dataPath));
-        this.app.get('/data/*', (req, res) => this._onResourceRequest(req, res, this.dataPath));
-
-        this.crossDomainApp.get('/data', (req, res) => this._onResourceRequest(req, res, this.dataPath));
-        this.crossDomainApp.get('/data/*', (req, res) => this._onResourceRequest(req, res, this.dataPath));
-
-        this.app.all('/ping/:delay', onPingRequest);
-        this.crossDomainApp.all('/ping/:delay', onPingRequest);
-    }
-
-    _registerScript (script) {
-        this.testResources.scripts.push(script);
-
-        this.app.get(script.src, (req, res) => onScriptRequest(req, res, script.content));
-        this.crossDomainApp.get(script.src, (req, res) => onScriptRequest(req, res, script.content));
-    }
-
-    fixtures (fixturesPath) {
-        this.fixturesPath = fixturesPath;
-        return this;
-    }
-
-    markup (markupPath) {
-        this.markupPath = markupPath;
-        return this;
-    }
-
-    data (dataPath) {
-        this.dataPath = dataPath;
+    //API
+    fixtures (basePath) {
+        this.basePath = basePath;
         return this;
     }
 
@@ -264,19 +299,18 @@ export default class QUnitServer {
         return this;
     }
 
-    configApp (config) {
-        config(this.app);
-        config(this.crossDomainApp);
+    css (css) {
+        if (Array.isArray(css))
+            css.forEach(this._registerCss);
+        else this._registerCss(css);
 
         return this;
     }
 
-    create () {
-        if (!this.fixturesPath)
-            throw 'fixtures path is not defined';
+    configApp (config) {
+        config(this.app);
+        config(this.crossDomainApp);
 
-        this._createServers();
-        this._setupRoutes();
         return this;
     }
 
@@ -290,16 +324,25 @@ export default class QUnitServer {
             tags:      settings.tags || curSettings.tags || 'master',
             browsers:  settings.browsers || curSettings.browsers || {},
             name:      settings.name || curSettings.name || 'QUnit tests',
-            urls:      [this.hostname + '/run-dir/fixtures'],
+            urls:      [this.hostname + '/run'],
             timeout:   settings.timeout || curSettings.timeout || 30
         };
 
         return this;
     }
 
-    close () {
-        this.appServer.close();
-        this.crossDomainAppServer.close();
+    create () {
+        if (!this.basePath)
+            throw 'fixtures path is not defined';
+
+        this._createServers();
+        this._setupRoutes();
+        return this;
+    }
+
+    tests (tests) {
+        this.pendingTests = tests;
+        return this;
     }
 
     async run () {
@@ -326,5 +369,10 @@ export default class QUnitServer {
 
         if (!reportSauceLabsTests(report))
             throw 'tests failed';
+    }
+
+    close () {
+        this.appServer.close();
+        this.crossDomainAppServer.close();
     }
 };

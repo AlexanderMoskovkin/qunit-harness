@@ -2,17 +2,13 @@ test('Simple test', function () {
     equal(1, 1);
 });
 
-test('test with markup', function () {
-    var $element = $('#test-element');
-
-    equal($element.length, 1);
-});
-
 asyncTest('test with data', function () {
     expect(1);
 
+    var iframeUrl = window.QUnitGlobals.getResourceUrl('../data/iframe.html');
+
     var $iframe = $('<iframe></iframe>')
-        .attr('src', window.QUnitGlobals.hostname + '/data/iframe.html')
+        .attr('src', iframeUrl)
         .load(function () {
             equal($iframe.contents().find('#iframe-element').length, 1);
             $iframe.remove();
@@ -46,8 +42,10 @@ asyncTest('test ping requests', function () {
 });
 
 asyncTest('test cross-domain iframe', function () {
+    var iframeUrl = window.QUnitGlobals.getResourceUrl('../data/cross-domain.html');
+
     var $iframe = $('<iframe></iframe>')
-        .attr('src', window.QUnitGlobals.crossDomainHostname + '/data/cross-domain.html')
+        .attr('src', window.QUnitGlobals.crossDomainHostname + iframeUrl)
         .appendTo('body');
 
     var timeout = 50;
@@ -71,11 +69,21 @@ asyncTest('test cross-domain iframe', function () {
 });
 
 asyncTest('test resources', function () {
-    expect(2);
+    expect(4);
+
+    var iframeUrl = window.QUnitGlobals.getResourceUrl('../data/iframe.html');
 
     var $iframe = $('<iframe></iframe>')
-        .attr('src', window.QUnitGlobals.hostname + '/data/iframe.html')
+        .attr('src', window.QUnitGlobals.hostname + iframeUrl)
         .load(function () {
+            var iframeContents = $iframe.contents()[0];
+
+            var $el100px       = $('<div></div>').addClass('element-100-px').appendTo('body');
+            var $el100pxIFrame = $('<div></div>').addClass('element-100-px').appendTo(iframeContents.body);
+
+            equal($el100px.width(), 100);
+            equal($el100pxIFrame.width(), 100);
+
             ok(window.resourceLoaded);
             ok($iframe[0].contentWindow.resourceLoaded);
 
@@ -88,8 +96,10 @@ asyncTest('test resources', function () {
 asyncTest('configure app', function () {
     expect(2);
 
+    var iframeUrl = window.QUnitGlobals.getResourceUrl('../data/cross-domain.html');
+
     var $iframe = $('<iframe></iframe>')
-        .attr('src', window.QUnitGlobals.crossDomainHostname + '/data/cross-domain.html')
+        .attr('src', window.QUnitGlobals.crossDomainHostname + iframeUrl)
         .appendTo('body');
 
     var data              = 'test-data';

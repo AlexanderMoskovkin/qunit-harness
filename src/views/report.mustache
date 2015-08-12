@@ -7,7 +7,7 @@
 <body>
 <h1>Results:</h1>
 
-<h2><a href="{{{path}}}">{{{path}}}</a></h2>
+<h2><a href="{{{taskPath}}}">{{{taskPath}}}</a></h2>
 
 <b>Total: </b> {{{total}}} <br/>
 <b>Completed: </b> {{{completed}}} <br/>
@@ -24,10 +24,10 @@
 
                     {{#assertions}}
                         {{#failed}}
-                            {{#module}}<b>Module: </b>{{{module}}}{{/module}}<br/>
-                            {{#message}}<b>Message: </b>{{{message}}}{{/message}}<br/>
-                            {{#expected}}<b>Expected: </b>{{{expected}}}{{/expected}}<br/>
-                            {{#actual}}<b>Actual: </b>{{{actual}}}{{/actual}}<br/><br/>
+                            {{#module}}<b>Module: </b>{{{module}}}<br/>{{/module}}
+                            {{#message}}<b>Message: </b>{{{message}}}<br/>{{/message}}
+                            {{#expected}}<b>Expected: </b>{{{expected}}}<br/>{{/expected}}
+                            <b>Actual: </b>{{{actual}}}<br/><br/>
                         {{/failed}}
                     {{/assertions}}
                 {{/failed}}
