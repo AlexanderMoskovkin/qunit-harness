@@ -15,7 +15,7 @@ gulp.task('copy-vendor', ['clean'], function () {
         .pipe(gulp.dest('lib/vendor'));
 });
 
-gulp.task('build', ['clean'], function () {
+gulp.task('build', ['copy-vendor'], function () {
     var js = gulp
         .src('src/**/*.js')
         .pipe(babel());
@@ -39,11 +39,11 @@ gulp.task('lint', function () {
         .pipe(eslint.failAfterError());
 });
 
-gulp.task('test', ['lint', 'build', 'copy-vendor'], function () {
+gulp.task('test', ['lint', 'build'], function () {
     require('./test/index');
 });
 
-gulp.task('saucelabs', ['lint', 'build', 'copy-vendor'], function (done) {
+gulp.task('saucelabs', ['lint', 'build'], function (done) {
     var browsers = [{
         platform:    'Windows 10',
         browserName: 'chrome'

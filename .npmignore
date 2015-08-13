@@ -7,5 +7,6 @@
 .travis.yml
 Gulpfile.js
 src/
+vendor/
 test/
 .DS_Store
