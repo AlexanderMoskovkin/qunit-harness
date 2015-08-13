@@ -1,0 +1,11 @@
+.babelrc
+.editorconfig
+.eslintrc
+.git*
+.idea
+.npmignore
+.travis.yml
+Gulpfile.js
+src/
+test/
+.DS_Store
