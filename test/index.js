@@ -22,7 +22,7 @@ function configApp (app) {
 
 module.exports = new QUnitServer()
     .fixtures(FIXTURES_PATH)
-    .scripts({ src: '/script.js', content: script })
-    .css({ src: '/style.css', content: css })
+    .scripts([{ src: '/script.js', content: script }])
+    .css([{ src: '/style.css', content: css }])
     .configApp(configApp)
     .create();

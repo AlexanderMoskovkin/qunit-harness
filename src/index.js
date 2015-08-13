@@ -293,7 +293,7 @@ export default class QUnitServer {
 
     scripts (scripts) {
         if (Array.isArray(scripts))
-            scripts.forEach(this._registerScript);
+            scripts.forEach(script => this._registerScript(script));
         else this._registerScript(scripts);
 
         return this;
@@ -301,7 +301,7 @@ export default class QUnitServer {
 
     css (css) {
         if (Array.isArray(css))
-            css.forEach(this._registerCss);
+            css.forEach(css => this._registerCss(css));
         else this._registerCss(css);
 
         return this;
