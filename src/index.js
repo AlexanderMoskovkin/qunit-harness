@@ -57,9 +57,10 @@ async function getFile (res, filePath) {
 //QUnitServer
 export default class QUnitServer {
     constructor () {
-        this.port            = 1335;
-        this.crossDomainPort = 1336;
-        this.hostname        = 'http://localhost:' + this.port;
+        this.serverPort            = 1335;
+        this.crossDomainServerPort = 1336;
+        this.hostname              = '';
+        this.crossDomainHostname   = '';
 
         this.basePath = '';
 
@@ -80,9 +81,6 @@ export default class QUnitServer {
         this.globalsTemplate    = fs.readfileSync(GLOBALS_TEMPLATE_PATH, 'utf-8');
         this.qunitSetupTemplate = fs.readfileSync(QUNIT_SETUP_TEMPLATE_PATH, 'utf-8');
 
-        this.hostname            = 'http://localhost:' + this.port;
-        this.crossDomainHostname = 'http://localhost:' + this.crossDomainPort;
-
         this.testResources = {
             scripts: [],
             css:     []
@@ -99,8 +97,11 @@ export default class QUnitServer {
 
     //Init
     _createServers () {
-        this.appServer            = http.createServer(this.app).listen(this.port);
-        this.crossDomainAppServer = http.createServer(this.crossDomainApp).listen(this.crossDomainPort);
+        this.hostname            = 'http://localhost:' + this.serverPort;
+        this.crossDomainHostname = 'http://localhost:' + this.crossDomainServerPort;
+
+        this.appServer            = http.createServer(this.app).listen(this.serverPort);
+        this.crossDomainAppServer = http.createServer(this.crossDomainApp).listen(this.crossDomainServerPort);
     }
 
     _setupRoutes () {
@@ -288,6 +289,18 @@ export default class QUnitServer {
     //API
     fixtures (basePath) {
         this.basePath = basePath;
+        return this;
+    }
+
+    port (port) {
+        this.serverPort = port;
+
+        return this;
+    }
+
+    crossDomainPort (port) {
+        this.crossDomainServerPort = port;
+
         return this;
     }
 
