@@ -48,6 +48,24 @@ QUnit.done(function (res) {
 
     window.XMLHttpRequest = nativeXMLHttpRequest;
 
+    //NOTE: we should proccess assertions because some of the actual-expected values can't be stringified
+    report.tests = report.tests.map(function (test) {
+        test.assertions = test.assertions.map(function (assertion) {
+            try {
+                JSON.stringify(assertion.actual);
+                JSON.stringify(assertion.expected);
+            }
+            catch(err) {
+                assertion.actual = assertion.actual.toString();
+                assertion.expected = assertion.expected.toString();
+            }
+
+            return assertion;
+        });
+
+        return test;
+    });
+
     $.ajax({
         url:         '/test-done/' + window.QUnitGlobals._taskId,
         type:        'POST',

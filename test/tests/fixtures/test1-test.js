@@ -69,9 +69,11 @@ asyncTest('test cross-domain iframe', function () {
 });
 
 asyncTest('test resources', function () {
-    expect(4);
+    expect(5);
 
-    var iframeUrl = window.QUnitGlobals.getResourceUrl('../data/iframe.html');
+    var iframeUrl = window.QUnitGlobals.getResourceUrl('../data/iframe.html', 'testIFrame');
+
+    ok(iframeUrl.indexOf('testIFrame') > -1);
 
     var $iframe = $('<iframe></iframe>')
         .attr('src', window.QUnitGlobals.hostname + iframeUrl)

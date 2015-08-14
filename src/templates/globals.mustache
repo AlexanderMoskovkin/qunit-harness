@@ -6,7 +6,14 @@ window.QUnitGlobals = {
     hostname: "{{{hostname}}}",
     crossDomainHostname: "{{{crossDomainHostname}}}",
 
-    getResourceUrl: function (filePath) {
-        return '/test-resource/' + encodeURIComponent(filePath) + '?base=' + window.QUnitGlobals._fullPath;
+    getResourceUrl: function (filePath, resourceName) {
+        return [
+            '/test-resource',
+            resourceName ? ('/' + resourceName) : '',
+            '?filePath=',
+            encodeURIComponent(filePath),
+            '&base=',
+            window.QUnitGlobals._fullPath
+        ].join('');
     }
 };

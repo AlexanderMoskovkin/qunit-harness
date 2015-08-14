@@ -11,7 +11,7 @@
 <ul style="list-style-type: none">
     {{# dirs }}
         <li>
-            <a href="{{currentDir}}/{{ path }}">{{ path }}</a>
+            <a href="/{{currentDir}}/{{ path }}">{{ path }}</a>
         </li>
     {{/dirs}}
 </ul>
@@ -20,7 +20,7 @@
 <ul>
     {{# files}}
         <li>
-            <a href="{{currentDir}}/{{path}}">{{path}}</a>
+            <a href="/{{currentDir}}/{{path}}">{{path}}</a>
         </li>
     {{/files}}
 </ul>

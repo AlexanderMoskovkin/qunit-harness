@@ -55,7 +55,7 @@ async function onCssRequest (req, res, filePath) {
 
 async function getFile (res, filePath) {
     res.set('Content-Type', contentTypes[path.extname(filePath)]);
-    res.send(await fs.readfile(filePath, 'utf-8'));
+    res.send(await fs.readfile(filePath));
 }
 
 //QUnitServer
@@ -120,10 +120,12 @@ export default class QUnitServer {
         this.app.get('/next-test/:id', (req, res) => this._onNextTest(res, req.params['id']));
         this.app.get('/report/:id', (req, res) => this._onReportRequest(res, req.params['id']));
 
-        this.app.get('/test-resource/:filePath', (req, res) => getFile(res, path.join(path.dirname(req.query['base']),
-            req.params['filePath'])));
-        this.crossDomainApp.get('/test-resource/:filePath', (req, res) => getFile(res, path.join(path.dirname(req.query['base']),
-            req.params['filePath'])));
+        this.app.get('/test-resource(/:name)?', (req, res) => {
+            getFile(res, path.join(path.dirname(req.query['base']), req.query['filePath']))
+        });
+        this.crossDomainApp.get('/test-resource(/:name)?', (req, res) => {
+            getFile(res, path.join(path.dirname(req.query['base']), req.query['filePath']));
+        });
 
         this.app.get('/fixtures', (req, res) => this._onResourceRequest(req, res, this.basePath));
         this.app.get('/fixtures/*', (req, res) => this._onResourceRequest(req, res, this.basePath));
@@ -155,7 +157,7 @@ export default class QUnitServer {
         var stats = await fs.stat(resourcePath);
 
         if (!stats)
-            return res.send(404);
+            return res.sendStatus(404);
 
         if (stats.isDirectory()) {
             var { dirs, files } = await readDir(resourcePath);
@@ -169,8 +171,8 @@ export default class QUnitServer {
             });
 
             res.locals = {
-                currentDir:        req.path,
-                encodedCurrentDir: encodeURIComponent(req.path),
+                currentDir:        req.path.replace(/^\//, ''),
+                encodedCurrentDir: encodeURIComponent(req.path.replace(/^\//, '')),
                 dirs:              dirs,
                 files:             files
             };
@@ -204,10 +206,11 @@ export default class QUnitServer {
     _onNextTest (res, taskId) {
         var task = this.tasks[taskId];
 
-        if (task.tests.length)
-            return this._runTest(res, task.tests[0], taskId);
+        var redirectUrl = task.tests.length ?
+                          pathToUrl('/fixtures/' + path.relative(this.basePath, task.tests[0]) + '?taskId=' + taskId) :
+                          '/report/' + taskId;
 
-        res.redirect('/report/' + taskId);
+        res.redirect(redirectUrl);
     }
 
     _onReportRequest (res, taskId) {
