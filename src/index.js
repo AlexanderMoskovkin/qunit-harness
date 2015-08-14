@@ -39,12 +39,16 @@ function preventCaching (req, res, next) {
     next();
 }
 
-function onScriptRequest (req, res, content) {
+async function onScriptRequest (req, res, filePath) {
+    var content = await fs.readfile(filePath);
+
     res.setHeader('content-type', contentTypes['.js']);
     res.send(content);
 }
 
-function onCssRequest (req, res, content) {
+async function onCssRequest (req, res, filePath) {
+    var content = await fs.readfile(filePath);
+
     res.setHeader('content-type', contentTypes['.css']);
     res.send(content);
 }
@@ -131,15 +135,15 @@ export default class QUnitServer {
     _registerScript (script) {
         this.testResources.scripts.push(script);
 
-        this.app.get(script.src, (req, res) => onScriptRequest(req, res, script.content));
-        this.crossDomainApp.get(script.src, (req, res) => onScriptRequest(req, res, script.content));
+        this.app.get(script.src, (req, res) => onScriptRequest(req, res, script.path));
+        this.crossDomainApp.get(script.src, (req, res) => onScriptRequest(req, res, script.path));
     }
 
     _registerCss (css) {
         this.testResources.css.push(css);
 
-        this.app.get(css.src, (req, res) => onCssRequest(req, res, css.content));
-        this.crossDomainApp.get(css.src, (req, res) => onCssRequest(req, res, css.content));
+        this.app.get(css.src, (req, res) => onCssRequest(req, res, css.path));
+        this.crossDomainApp.get(css.src, (req, res) => onCssRequest(req, res, css.path));
     }
 
 

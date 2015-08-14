@@ -11,9 +11,6 @@ var SCRIPT_PATH = path.join(TESTS_DIR, './resources/script.js');
 var CSS_PATH    = path.join(TESTS_DIR, './resources/style.css');
 
 
-var script = fs.readFileSync(SCRIPT_PATH, 'utf-8');
-var css    = fs.readFileSync(CSS_PATH, 'utf-8');
-
 function configApp (app) {
     app.post('/custom/:data', function (req, res) {
         res.send(req.params['data']);
@@ -22,7 +19,7 @@ function configApp (app) {
 
 module.exports = new QUnitServer()
     .fixtures(FIXTURES_PATH)
-    .scripts([{ src: '/script.js', content: script }])
-    .css([{ src: '/style.css', content: css }])
+    .scripts([{ src: '/script.js', path: SCRIPT_PATH }])
+    .css([{ src: '/style.css', path: CSS_PATH }])
     .configApp(configApp)
     .create();
