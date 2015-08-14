@@ -44,17 +44,61 @@ gulp.task('test', ['lint', 'build'], function () {
 });
 
 gulp.task('saucelabs', ['lint', 'build'], function (done) {
-    var browsers = [{
-        platform:    'Windows 10',
-        browserName: 'chrome'
-    }];
+    var BROWSERS = [
+        {
+            platform:    'Windows 10',
+            browserName: 'chrome'
+        },
+        {
+            platform:    'Windows 10',
+            browserName: 'firefox'
+        },
+        {
+            platform:    'Windows 10',
+            browserName: 'internet explorer',
+            version:     '11.0'
+        },
+        {
+            platform:    'Windows 8',
+            browserName: 'internet explorer',
+            version:     '10.0'
+        },
+        {
+            platform:    'Windows 7',
+            browserName: 'internet explorer',
+            version:     '9.0'
+        },
+        {
+            browserName: 'iphone',
+            platform:    'OS X 10.10',
+            version:     '7.1',
+            deviceName:  'iPhone Simulator'
+        },
+        {
+            browserName: 'safari',
+            platform:    'OS X 10.10',
+            version:     '8.0'
+        },
+        {
+            browserName: 'iphone',
+            platform:    'OS X 10.10',
+            version:     '8.1',
+            deviceName:  'iPad Simulator'
+        },
+        {
+            browserName: 'android',
+            platform:    'Linux',
+            version:     '5.1',
+            deviceName:  'Android Emulator'
+        }
+    ];
 
     var sauceLabsSettings = {
         username:  process.env.SAUCELABS_USERNAME,
         accessKey: process.env.SAUCELABS_ACCESS_KEY,
         build:     'build',
         tags:      'master',
-        browsers:  browsers,
+        browsers:  BROWSERS,
         name:      'QUnit tests',
         timeout:   60
     };
