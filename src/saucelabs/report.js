@@ -10,8 +10,8 @@ function checkFailures (results) {
         var platform = [platformResults.platform[0], platformResults.platform[1], platformResults.platform[2] ||
                                                                                   ''].join(' ');
 
-        var runningError = typeof platformResults.result === 'string';
-        var failed       = platformResults.result.failed || runningError;
+        var runningError = !platformResults.result || typeof platformResults.result === 'string';
+        var failed       = runningError || platformResults.result.failed;
 
         msg.push(chalk.bold(failed ? chalk.red('FAILURES:') : chalk.green('OK:')));
         msg.push(platform);

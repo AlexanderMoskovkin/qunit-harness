@@ -51,13 +51,25 @@ QUnit.done(function (res) {
     //NOTE: we should proccess assertions because some of the actual-expected values can't be stringified
     report.tests = report.tests.map(function (test) {
         test.assertions = test.assertions.map(function (assertion) {
+            var canNotStringify = false;
+
             try {
                 JSON.stringify(assertion.actual);
                 JSON.stringify(assertion.expected);
             }
             catch(err) {
-                assertion.actual = assertion.actual.toString();
-                assertion.expected = assertion.expected.toString();
+                canNotStringify = true;
+            }
+
+            if(canNotStringify) {
+                try {
+                    assertion.actual = assertion.actual.toString();
+                    assertion.expected = assertion.expected.toString();
+                }
+                catch(err) {
+                    assertion.actual = null;
+                    assertion.expected = null;
+                }
             }
 
             return assertion;
