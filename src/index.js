@@ -20,10 +20,10 @@ const QUNIT_SETUP_TEMPLATE_PATH = path.join(__dirname, 'templates/qunit-setup.mu
 
 //Globals
 var contentTypes = {
-    '.js':   'application/javascript',
-    '.css':  'text/css',
-    '.html': 'text/html',
-    '':      'text/html'
+    '.js':     'application/javascript',
+    '.css':    'text/css',
+    '.html':   'text/html',
+    'default': 'text/html'
 };
 
 
@@ -200,6 +200,7 @@ export default class QUnitServer {
 
         task.tests.shift();
 
+        res.set('Content-Type', contentTypes['default']);
         res.end('/next-test/' + taskId);
     }
 
@@ -216,10 +217,11 @@ export default class QUnitServer {
     _onReportRequest (res, taskId) {
         var task              = this.tasks[taskId];
         var failedTaskReports = task.reports.filter(report => report.result.failed);
+        var taskPath          = pathToUrl(task.path).replace(/^\//, '');
 
         res.locals = {
-            taskPath:          task.path,
-            encodedTaskPath:   encodeURIComponent(task.path),
+            taskPath:          taskPath,
+            encodedTaskPath:   encodeURIComponent(taskPath),
             total:             task.total,
             completed:         task.completed,
             passed:            task.completed - failedTaskReports.length,
