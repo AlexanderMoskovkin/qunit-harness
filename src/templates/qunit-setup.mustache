@@ -88,3 +88,11 @@ QUnit.done(function (res) {
         }
     });
 });
+
+QUnit.begin(function () {
+    $('#qunit-tests').css('display', 'none');
+});
+
+QUnit.done(function () {
+    $('#qunit-tests').css('display', '');
+});
