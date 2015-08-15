@@ -27,7 +27,7 @@ function checkFailures (results) {
 
         console.log(msg.join(' '));
 
-        if (platformResults.result.errors) {
+        if (!runningError && platformResults.result.errors) {
             platformResults.result.errors.forEach(function (error) {
                 error.platform = platform;
                 testErrors.push(error);

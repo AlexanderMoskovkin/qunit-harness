@@ -120,7 +120,7 @@ export default class QUnitServer {
         this.app.get('/next-test/:id', (req, res) => this._onNextTest(res, req.params['id']));
         this.app.get('/report/:id', (req, res) => this._onReportRequest(res, req.params['id']));
 
-        this.app.get('/test-resource(/:name)?', (req, res) => {
+        this.app.get('/test-resource(/)?*', (req, res) => {
             getFile(res, path.join(path.dirname(req.query['base']), req.query['filePath']))
         });
         this.crossDomainApp.get('/test-resource(/:name)?', (req, res) => {
@@ -359,6 +359,9 @@ export default class QUnitServer {
 
         this._createServers();
         this._setupRoutes();
+
+        console.log('QUnit server listens on', this.hostname);
+
         return this;
     }
 
