@@ -99,7 +99,7 @@ gulp.task('saucelabs', ['lint', 'build'], function (done) {
         build:     'build',
         tags:      'master',
         browsers:  BROWSERS,
-        name:      'QUnit tests',
+        name:      'qunit-harness qunit tests',
         timeout:   60
     };
 
