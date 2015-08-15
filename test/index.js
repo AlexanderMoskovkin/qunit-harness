@@ -19,8 +19,8 @@ function configApp (app) {
 
 module.exports = new QUnitServer()
     .fixtures(FIXTURES_PATH)
-    .port(2002)
-    .crossDomainPort(2003)
+    .port(2000)
+    .crossDomainPort(2001)
     .scripts([{ src: '/script.js', path: SCRIPT_PATH }])
     .css([{ src: '/style.css', path: CSS_PATH }])
     .configApp(configApp)

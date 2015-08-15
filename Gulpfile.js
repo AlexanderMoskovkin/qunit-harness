@@ -96,8 +96,8 @@ gulp.task('saucelabs', ['lint', 'build'], function (done) {
     var sauceLabsSettings = {
         username:  process.env.SAUCELABS_USERNAME,
         accessKey: process.env.SAUCELABS_ACCESS_KEY,
-        build:     'build',
-        tags:      'master',
+        build:     process.env.TRAVIS_JOB_ID || 'build',
+        tags:      [process.env.TRAVIS_BRANCH || 'master'],
         browsers:  BROWSERS,
         name:      'qunit-harness qunit tests',
         timeout:   60
