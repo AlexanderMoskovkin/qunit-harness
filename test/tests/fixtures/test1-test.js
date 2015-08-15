@@ -115,7 +115,11 @@ asyncTest('configure app', function () {
             start();
     }
 
-    $.post(customUrl, onResponse);
+    $.ajax({
+        type:    'POST',
+        url:     customUrl,
+        success: onResponse
+    });
 
     function onmessage (e) {
         if (e.data.type === 'ready')
