@@ -116,10 +116,10 @@ asyncTest('configure app', function () {
     }
 
     $.ajax({
-        type:    'POST',
-        url:     customUrl,
+        type:        'POST',
+        url:         customUrl,
         contentType: 'application/json',
-        success: onResponse
+        success:     onResponse
     });
 
     function onmessage (e) {
