@@ -385,9 +385,8 @@ export default class QUnitServer {
         catch (err) {
             error = err;
         }
-        finally {
-            await saucelabs.closeTunnel(tunnel);
-        }
+
+        saucelabs.closeTunnel(tunnel);
 
         if (error)
             throw error;
