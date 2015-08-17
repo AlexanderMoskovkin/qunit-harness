@@ -20,15 +20,15 @@ function configQunitServerApp (app) {
 
 //Local machine testing
 var qunitHarness = new QUnitHarness
-    //set path with tests
+    //specify the path to the tests
     .fixtures('/tests/')
-    //set qunit server ports
+    //specify qunit server ports
     .port(2000)             //by default 1335
     .crossDomainPort(2001)  //by default 1336
-    //add index.js script content as a <script src='/tested-script.js'> in the head of the test page
+    //add the index.js script content as <script src='/tested-script.js'> to the head of the test page
     .scripts([{ src: '/tested-script.js', path: '/lib/index.js' }]) 
     .css([{ src: '/style.css', path: '/lib/style.css' }])
-    //extend qunit server application for test purposes
+    //extend the qunit server application for test purposes
     .configApp(configQunitServerApp)
     .create();
     
@@ -83,8 +83,8 @@ window.QUnitGlobals.crossDomainHostname;   //http://localhost:1336/
 ```js
 window.QUnitGlobals.getResourceUrl(pathToResourceFile[, urlAlias])
 ```
-By default the resource will have `http://<hostname>/test-resource?filePath=<resourceFilePath>&base=<currentTestFilePath>` url.
-To customize the url use the `urlAlias` argument:
+By default the resource has the `http://<hostname>/test-resource?filePath=<resourceFilePath>&base=<currentTestFilePath>` url.
+To customize the url, use the `urlAlias` argument:
 ```js
 window.QUnitGlobals.getResourceUrl('../data/script.js', 'my-custom-script/script.js');
 //returns "http://<hostname>/test-resource/my-custom-script/script.js?filePath=..."
@@ -110,12 +110,12 @@ window.QUnitGlobals.getResourceUrl('../data/script.js', 'my-custom-script/script
 asyncTest('iframe test', function () {
     var iframeSrc = window.QUnitGlobals.getResourceUrl('../data/iframe.html', 'iframe.html');
     $('<iframe></iframe>').src(iframeSrc).appendTo('body');
-    //appends an iframe with url http://<hostname>/test-resource/iframe.html
+    //appends an iframe with the url http://<hostname>/test-resource/iframe.html
     ...
 });
 ```
 #### Run a test with some markup on the page
-Put `testname-test.js` and `testname.html` files to a folder with `-test` postfix and markup from the `.html` file wiil be included to the `testname-test.js` test page.
+Put the `testname-test.js` and `testname.html` files to the folder with the `-test` postfix. Then, the markup from the `.html` file will be included into the `testname-test.js` test page.
 
 **Example:**
 ```html
