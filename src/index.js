@@ -386,12 +386,24 @@ export default class QUnitServer {
             error = err;
         }
 
-        saucelabs.closeTunnel(tunnel);
+        try {
+            saucelabs.closeTunnel(tunnel);
+        }
+        catch (err) {
+            console.log('ERROR: Can not close saucelabs tunnel:', err);
+        }
 
         if (error)
             throw error;
 
-        if (!reportSauceLabsTests(report))
+        try {
+            var reportRes = reportSauceLabsTests(report);
+        }
+        catch (err) {
+            console.log('ERROR: Can not create the report:', err);
+        }
+
+        if (!reportRes)
             throw 'tests failed';
     }
 
