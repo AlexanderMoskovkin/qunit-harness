@@ -398,6 +398,7 @@ export default class QUnitServer {
 
         try {
             var reportRes = reportSauceLabsTests(report);
+
         }
         catch (err) {
             console.log('ERROR: Can not create the report:', err);
