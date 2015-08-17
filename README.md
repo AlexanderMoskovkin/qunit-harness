@@ -80,6 +80,17 @@ window.QUnitGlobals.crossDomainHostname;   //http://localhost:1336/
 ```
 
 ####Get test resource
+```js
+window.QUnitGlobals.getResourceUrl(pathToResourceFile[, urlAlias])
+```
+By default the resource will have `http://<hostname>/test-resource?filePath=<resourceFilePath>&base=<currentTestFilePath>` url.
+To customize the url use the `urlAlias` argument:
+```js
+window.QUnitGlobals.getResourceUrl('../data/script.js', 'my-custom-script/script.js');
+//returns "http://<hostname>/test-resource/my-custom-script/script.js?filePath=..."
+```
+
+**Example:**
 ```html
 <!-- data/iframe.html -->
 <!DOCTYPE html>
@@ -103,8 +114,10 @@ asyncTest('iframe test', function () {
     ...
 });
 ```
-
 #### Run a test with some markup on the page
+Put `testname-test.js` and `testname.html` files to a folder with `-test` postfix and markup from the `.html` file wiil be included to the `testname-test.js` test page.
+
+**Example:**
 ```html
 <!-- tests/markup-test/index.html -->
 <div id="#test-element"></div>
