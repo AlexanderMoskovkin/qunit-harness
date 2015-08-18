@@ -3,6 +3,7 @@ import request from 'request';
 
 
 const CHECK_RESULTS_TIMEOUT = 1000 * 2;
+const REPORTING_TIMEOUT     = 1000 * 30;
 
 
 //Utils
@@ -56,6 +57,23 @@ export default class SauceLabsAdapter {
                               Math.floor((new Date()).getTime() / 1000 - 1230768000).toString()
 
         };
+
+        this.tasks             = [];
+        this.reportingInterval = null;
+    }
+
+    _report () {
+        var total      = this.tasks.length;
+        var queued     = this.tasks.filter(task => task.status === 'queued').length;
+        var inProgress = this.tasks.filter(task => task.status === 'progress').length;
+        var completed  = this.tasks.filter(task => task.status === 'completed').length;
+
+        console.log(`Tasks total: ${total}, queued: ${queued}, in progress: ${inProgress}, completed: ${completed}`);
+    }
+
+    _runReporting () {
+        this._report();
+        this.reportingInterval = setInterval(()=>this._report(), REPORTING_TIMEOUT);
     }
 
     async _startTask (browsers, url) {
@@ -84,6 +102,12 @@ export default class SauceLabsAdapter {
         if (!taskIds || !taskIds.length)
             throw 'Error starting tests through Sauce API: ' + JSON.stringify(body);
 
+        this.tasks = taskIds.map(id => {
+            return { id, status: 'queued' };
+        });
+
+        this._runReporting();
+
         return taskIds;
     }
 
@@ -105,6 +129,14 @@ export default class SauceLabsAdapter {
                 sendRequest(params)
                     .then(function (body) {
                         var result = body['js tests'] && body['js tests'][0];
+                        var status = null;
+
+                        if (body.completed)
+                            status = 'completed';
+                        else if (result)
+                            status = result.status.indexOf('queued') > -1 ? 'queued' : 'progress';
+
+                        runner.tasks.filter(task => task.id === taskId)[0]['status'] = status;
 
                         if (!body.completed) {
                             return wait(CHECK_RESULTS_TIMEOUT)
@@ -130,6 +162,10 @@ export default class SauceLabsAdapter {
                     });
 
                     return Promise.all(completeTaskPromises);
+                })
+                .then(function (result) {
+                    clearInterval(runner.reportingInterval);
+                    return result;
                 });
         });
 

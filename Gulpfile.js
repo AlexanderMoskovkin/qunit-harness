@@ -63,12 +63,12 @@ gulp.task('saucelabs', ['lint', 'build'], function (done) {
             browserName: 'internet explorer',
             version:     '10.0'
         },
-        {
+        /*{
             platform:    'Windows 7',
             browserName: 'internet explorer',
             version:     '9.0'
         },
-        {
+        */{
             browserName: 'iphone',
             platform:    'OS X 10.10',
             version:     '7.1',
