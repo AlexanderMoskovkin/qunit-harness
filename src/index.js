@@ -101,8 +101,8 @@ export default class QUnitServer {
 
     //Init
     _createServers () {
-        this.hostname            = 'http://localhost:' + this.serverPort;
-        this.crossDomainHostname = 'http://localhost:' + this.crossDomainServerPort;
+        this.hostname            = 'http://127.0.0.1:' + this.serverPort;
+        this.crossDomainHostname = 'http://127.0.0.1:' + this.crossDomainServerPort;
 
         this.appServer            = http.createServer(this.app).listen(this.serverPort);
         this.crossDomainAppServer = http.createServer(this.crossDomainApp).listen(this.crossDomainServerPort);
