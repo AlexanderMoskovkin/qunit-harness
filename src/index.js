@@ -117,7 +117,6 @@ export default class QUnitServer {
         this.app.get('/run', (req, res) => this._runTests(res, this.pendingTests.map(item => item)));
         this.app.get('/run-dir/:dir', (req, res) => this._runDir(res, decodeURIComponent(req.params['dir'])));
         this.app.post('/test-done/:id', (req, res) => this._onTestDone(res, req.body.report, req.params['id']));
-        this.app.get('/next-test/:id', (req, res) => this._onNextTest(res, req.params['id']));
         this.app.get('/report/:id', (req, res) => this._onReportRequest(res, req.params['id']));
 
         this.app.get('/test-resource(/)?*', (req, res) => {
@@ -200,18 +199,13 @@ export default class QUnitServer {
 
         task.tests.shift();
 
-        res.set('Content-Type', contentTypes['default']);
-        res.end('/next-test/' + taskId);
-    }
-
-    _onNextTest (res, taskId) {
-        var task = this.tasks[taskId];
-
         var redirectUrl = task.tests.length ?
                           pathToUrl('/fixtures/' + path.relative(this.basePath, task.tests[0]) + '?taskId=' + taskId) :
                           '/report/' + taskId;
 
-        res.redirect(redirectUrl);
+
+        res.set('Content-Type', contentTypes['default']);
+        res.end(redirectUrl);
     }
 
     _onReportRequest (res, taskId) {
