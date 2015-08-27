@@ -9,6 +9,7 @@ function checkFailures (results) {
         var msg      = [];
         var platform = [platformResults.platform[0], platformResults.platform[1], platformResults.platform[2] ||
                                                                                   ''].join(' ');
+        var url      = platformResults.url;
 
         var runningError = !platformResults.result || typeof platformResults.result === 'string';
         var failed       = runningError || platformResults.result.failed;
@@ -24,6 +25,8 @@ function checkFailures (results) {
             msg.push(chalk.bold('Total:'), platformResults.result.total);
             msg.push(chalk.bold('Failed:'), platformResults.result.failed);
         }
+
+        msg.push(`(${url})`);
 
         console.log(msg.join(' '));
 

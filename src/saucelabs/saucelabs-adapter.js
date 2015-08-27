@@ -72,7 +72,11 @@ export default class SauceLabsAdapter {
     }
 
     _runReporting () {
+        var accountUrl = `https://saucelabs.com/u/${this.options.username}`;
+
+        console.log(`See the progress: ${accountUrl} (session: "${this.options.testName}", build: "${this.options.build}")`);
         this._report();
+
         this.reportingInterval = setInterval(()=>this._report(), REPORTING_TIMEOUT);
     }
 
