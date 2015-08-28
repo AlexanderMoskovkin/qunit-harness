@@ -1,6 +1,6 @@
 import Promise from 'promise';
 import SauceTunnel from 'sauce-tunnel';
-import SauceLabsAdapter from './saucelabs-adapter';
+import SauceLabsRunner from './runner';
 
 export function openTunnel (settings) {
     return new Promise(function (resolve, reject) {
@@ -27,7 +27,7 @@ export function closeTunnel (tunnel) {
 }
 
 export async function run (settings) {
-    var adapter = new SauceLabsAdapter(settings);
+    var runner = new SauceLabsRunner(settings);
 
-    return await adapter.runTests();
+    return await runner.runTests();
 }

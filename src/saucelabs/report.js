@@ -5,7 +5,7 @@ function checkFailures (results) {
     var globalErrors = [];
     var testErrors   = [];
 
-    results[0].forEach(function (platformResults) {
+    results.forEach(function (platformResults) {
         var msg      = [];
         var platform = [platformResults.platform[0], platformResults.platform[1], platformResults.platform[2] ||
                                                                                   ''].join(' ');
