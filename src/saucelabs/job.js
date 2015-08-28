@@ -2,6 +2,7 @@ import SaucelabsRequestAdapter from './request';
 import wait from '../utils/wait';
 
 const CHECK_RESULTS_TIMEOUT = 1000 * 20;
+const MAX_RESTART_COUNT     = 5;
 
 
 //Job
@@ -21,8 +22,9 @@ export default class Job {
         this.requestAdapter = new SaucelabsRequestAdapter(this.options.username, this.options.accessKey);
         this.platform       = platform;
 
-        this.taskId = null;
-        this.status = Job.STATUSES.INITIALIZED;
+        this.taskId       = null;
+        this.status       = Job.STATUSES.INITIALIZED;
+        this.restartCount = 0;
     }
 
     static STATUSES = {
@@ -43,20 +45,48 @@ export default class Job {
             function checkStatus () {
                 job.requestAdapter.send(SaucelabsRequestAdapter.URLS.STATUS, statusRequestData)
                     .then(function (body) {
-                        var result = body['js tests'] && body['js tests'][0];
+                        var result  = body['js tests'] && body['js tests'][0];
+                        var restart = false;
 
-                        if (body.completed)
-                            job.status = Job.STATUSES.COMPLETED;
-                        else if (result)
-                            job.status = result.status.indexOf('queued') > -1 ?
-                                         Job.STATUSES.QUEUED : Job.STATUSES.IN_PROGRESS;
+                        if (body.completed) {
+                            if (typeof result.result === 'string' &&
+                                result.result.indexOf('Test exceeded maximum duration') > -1) {
+                                job._reportError(result.result + ' ' + result.url);
+                                restart = true;
+                            }
+                            else {
+                                job.status = Job.STATUSES.COMPLETED;
+                                resolve(result);
+                            }
+                        }
+                        else {
+                            var status = result.status;
 
-                        if (!body.completed) {
-                            return wait(CHECK_RESULTS_TIMEOUT)
-                                .then(checkStatus);
+                            if (status === 'test error') {
+                                job._reportError('saucelabs environment error');
+                                restart = true;
+                            }
+
+                            if (status.indexOf('queued') > -1)
+                                job.status = Job.STATUSES.QUEUED;
+
+                            if (status.indexOf('in progress') > -1)
+                                job.status = Job.STATUSES.IN_PROGRESS;
+
+                            if (!restart)
+                                wait(CHECK_RESULTS_TIMEOUT).then(checkStatus);
                         }
 
-                        resolve(result);
+                        if (restart) {
+                            if (++job.restartCount < MAX_RESTART_COUNT) {
+                                job._restartTask()
+                                    .then(resolve);
+                            }
+                            else {
+                                result.result = 'Tests failed (see the log)';
+                                resolve(result);
+                            }
+                        }
                     });
             }
 
@@ -64,8 +94,15 @@ export default class Job {
         });
     }
 
-    _restartTask () {
+    _reportError (error) {
+        console.log(`The task (${this.platform}) failed: ${error}`);
+    }
 
+    _restartTask () {
+        console.log(`Attempt ${this.restartCount} to restart the task (${this.platform})`);
+        this.requestAdapter.send(SaucelabsRequestAdapter.URLS.STOP_JOB(this.taskId), {});
+
+        return this.run();
     }
 
 

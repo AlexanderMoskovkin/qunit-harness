@@ -15,7 +15,7 @@ gulp.task('copy-vendor', ['clean'], function () {
         .pipe(gulp.dest('lib/vendor'));
 });
 
-gulp.task('build', ['copy-vendor'], function () {
+gulp.task('build', ['lint', 'copy-vendor'], function () {
     var js = gulp
         .src('src/**/*.js')
         .pipe(babel());

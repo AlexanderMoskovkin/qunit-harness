@@ -10,8 +10,9 @@ export default class SaucelabsRequestAdapter {
     }
 
     static URLS = {
-        RUN:    'js-tests',
-        STATUS: 'js-tests/status'
+        RUN:      'js-tests',
+        STATUS:   'js-tests/status',
+        STOP_JOB: jobId => `jobs/${jobId}/stop`
     };
 
     async send (url, data) {

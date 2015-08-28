@@ -2,20 +2,43 @@ import Promise from 'promise';
 import SauceTunnel from 'sauce-tunnel';
 import SauceLabsRunner from './runner';
 
-export function openTunnel (settings) {
-    return new Promise(function (resolve, reject) {
-        var tunnelId = Math.floor((new Date()).getTime() / 1000 - 1230768000).toString();
-        var tunnel   = new SauceTunnel(settings.username, settings.accessKey, tunnelId, true);
 
-        tunnel.start(function (isCreated) {
-            if (!isCreated)
-                reject('Failed to create Sauce tunnel');
-            else {
-                settings.tunnelIdentifier = tunnelId;
-                resolve(tunnel);
-            }
+const CREATE_TUNNEL_TIMEOUT           = 30 * 1000;
+const MAX_CREATE_TUNNEL_ATTEMPT_COUNT = 20;
+
+
+export async function openTunnel (settings) {
+    function open () {
+        return new Promise(function (resolve, reject) {
+            var tunnelId = Math.floor((new Date()).getTime() / 1000 - 1230768000).toString();
+            var tunnel   = new SauceTunnel(settings.username, settings.accessKey, tunnelId, true);
+
+            tunnel.start(function (isCreated) {
+                if (!isCreated)
+                    resolve(null);
+                else {
+                    settings.tunnelIdentifier = tunnelId;
+                    resolve(tunnel);
+                }
+            });
         });
-    });
+    }
+
+    var tunnel  = null;
+    var counter = 0;
+
+    while (!tunnel && counter++ < MAX_CREATE_TUNNEL_ATTEMPT_COUNT) {
+        tunnel = await open();
+
+        if (!tunnel)
+            console.log(`Failed to create Sauce tunnel (attempt ${counter} from ${MAX_CREATE_TUNNEL_ATTEMPT_COUNT})`);
+        else console.log('Sauce tunnel created');
+    }
+
+
+    if (!tunnel)
+        throw 'Failed to create Sauce tunnel';
+    else return tunnel;
 }
 
 export function closeTunnel (tunnel) {
