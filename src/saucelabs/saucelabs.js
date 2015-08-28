@@ -1,6 +1,7 @@
 import Promise from 'promise';
 import SauceTunnel from 'sauce-tunnel';
 import SauceLabsRunner from './runner';
+import wait from '../utils/wait';
 
 
 const CREATE_TUNNEL_TIMEOUT           = 30 * 1000;
@@ -30,8 +31,10 @@ export async function openTunnel (settings) {
     while (!tunnel && counter++ < MAX_CREATE_TUNNEL_ATTEMPT_COUNT) {
         tunnel = await open();
 
-        if (!tunnel)
+        if (!tunnel) {
+            await wait(CREATE_TUNNEL_TIMEOUT);
             console.log(`Failed to create Sauce tunnel (attempt ${counter} from ${MAX_CREATE_TUNNEL_ATTEMPT_COUNT})`);
+        }
         else console.log('Sauce tunnel created');
     }
 
