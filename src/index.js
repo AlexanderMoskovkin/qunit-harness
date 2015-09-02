@@ -13,9 +13,11 @@ import * as saucelabs from './saucelabs/saucelabs';
 import reportSauceLabsTests from './saucelabs/report';
 
 
-const VIEWS_PATH                = path.join(__dirname, 'views');
-const GLOBALS_TEMPLATE_PATH     = path.join(__dirname, 'templates/globals.mustache');
-const QUNIT_SETUP_TEMPLATE_PATH = path.join(__dirname, 'templates/qunit-setup.mustache');
+const VIEWS_PATH                    = path.join(__dirname, 'views');
+const GLOBALS_TEMPLATE_PATH         = path.join(__dirname, 'templates/globals.mustache');
+const QUNIT_SETUP_TEMPLATE_PATH     = path.join(__dirname, 'templates/qunit-setup.mustache');
+const STORE_GLOBALS_TEMPLATE_PATH   = path.join(__dirname, 'templates/store-globals.mustache');
+const RESTORE_GLOBALS_TEMPLATE_PATH = path.join(__dirname, 'templates/restore-globals.mustache');
 
 
 //Globals
@@ -82,8 +84,10 @@ export default class QUnitServer {
         this.crossDomainApp.use(express.static(path.join(__dirname, '/vendor')));
         this.app.use(bodyParser.json());
 
-        this.globalsTemplate    = fs.readfileSync(GLOBALS_TEMPLATE_PATH, 'utf-8');
-        this.qunitSetupTemplate = fs.readfileSync(QUNIT_SETUP_TEMPLATE_PATH, 'utf-8');
+        this.globalsTemplate        = fs.readfileSync(GLOBALS_TEMPLATE_PATH, 'utf-8');
+        this.qunitSetupTemplate     = fs.readfileSync(QUNIT_SETUP_TEMPLATE_PATH, 'utf-8');
+        this.storeGlobalsTemplate   = fs.readfileSync(STORE_GLOBALS_TEMPLATE_PATH, 'utf-8');
+        this.restoreGlobalsTemplate = fs.readfileSync(RESTORE_GLOBALS_TEMPLATE_PATH, 'utf-8');
 
         this.testResources = {
             scripts: [],
@@ -277,13 +281,15 @@ export default class QUnitServer {
         });
 
         res.locals = {
-            markup:     markup,
-            test:       test,
-            taskId:     taskId || '',
-            globals:    globals,
-            qunitSetup: mustache.render(this.qunitSetupTemplate, { taskId }),
-            scripts:    this.testResources.scripts,
-            css:        this.testResources.css
+            markup:         markup,
+            test:           test,
+            taskId:         taskId || '',
+            globals:        globals,
+            qunitSetup:     mustache.render(this.qunitSetupTemplate, { taskId }),
+            storeGlobals:   mustache.render(this.storeGlobalsTemplate),
+            restoreGlobals: mustache.render(this.restoreGlobalsTemplate),
+            scripts:        this.testResources.scripts,
+            css:            this.testResources.css
         };
         res.render('test');
     }

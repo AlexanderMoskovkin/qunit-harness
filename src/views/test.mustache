@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <link type="text/css" rel=stylesheet href="/qunit-1.18.0.css">
 
     <script type="text/javascript" src="/jquery.js"></script>
@@ -16,6 +16,10 @@
             {{{qunitSetup}}}
     </script>
 
+    <script type="text/javascript">
+            {{{storeGlobals}}}
+    </script>
+
     {{# css}}
         <link rel="stylesheet" type="text/css" href="{{{src}}}">
     {{/css}}
@@ -24,6 +28,9 @@
         <script type="text/javascript" src="{{{src}}}"></script>
     {{/scripts}}
 
+    <script type="text/javascript">
+            {{{restoreGlobals}}}
+    </script>
 </head>
 <body>
 <ol id=qunit-tests></ol>
