@@ -31,7 +31,12 @@ function checkFailures (results) {
         console.log(msg.join(' '));
 
         if (!runningError && platformResults.result.errors) {
-            platformResults.result.errors.forEach(function (error) {
+            //NOTE: https://support.saucelabs.com/customer/en/portal/private/cases/31354
+            var errors = typeof platformResults.result.errors.length !== 'undefined' ?
+                         platformResults.result.errors :
+                         Object.keys(platformResults.result.errors).map(index => platformResults.result.errors[index]);
+
+            errors.forEach(function (error) {
                 error.platform = platform;
                 testErrors.push(error);
             });

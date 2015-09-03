@@ -63,6 +63,11 @@ gulp.task('saucelabs', ['lint', 'build'], function (done) {
             browserName: 'internet explorer',
             version:     '10.0'
         },
+        {
+            platform:    'Windows 10',
+            browserName: 'microsoftedge',
+            version:     '20.10240'
+        },
         /*{
             platform:    'Windows 7',
             browserName: 'internet explorer',

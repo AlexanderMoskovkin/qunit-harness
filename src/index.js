@@ -105,7 +105,7 @@ export default class QUnitServer {
 
     //Init
     _createServers () {
-        var hostname             = process.env.TRAVIS ? 'http://127.0.0.1:' : 'http://localhost:';
+        var hostname = process.env.TRAVIS ? 'http://127.0.0.1:' : 'http://localhost:';
 
         this.hostname            = hostname + this.serverPort;
         this.crossDomainHostname = hostname + this.crossDomainServerPort;
