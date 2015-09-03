@@ -48,7 +48,8 @@
         passed: passedCount,
         failed: failedCount,
         total:  totalCount,
-        errors: []
+        errors: [],
+        tests:  []
     };
 
     var failedTest = null;
@@ -57,24 +58,49 @@
         {{#failedTaskReports}}
         taskPath = "{{{name}}}";
             {{#result}}
+            var duration = {{{runtime}}};
                 {{#tests}}
                     {{#failed}}
+                    var name = "{{{name}}}";
                     failedTest = {
                         testPath: taskPath,
-                        testName: "{{{name}}}"
+                        testName: name
                     };
                         {{#assertions}}
                             {{#failed}}
-                                {{#message}}failedTest.customMessage = "{{{message}}}";{{/message}}
-                                {{#expected}}failedTest.expected = "{{{expected}}}";{{/expected}}
-                                {{#actual}}failedTest.actual = "{{{actual}}}";{{/actual}}
+                            var message = "{{{message}}}";
+                            var expected = "{{{expected}}}";
+                            var actual = "{{{actual}}}";
+
+                            if (message)
+                                failedTest.customMessage = message;
+
+                            failedTest.expected = expected;
+                            failedTest.actual = actual;
                             {{/failed}}
                         {{/assertions}}
                     res.errors.push(failedTest);
+
+                    var resMessage = [failedTest.customMessage || 'test failed'];
+
+                    if (name !== 'global failure') {
+                        resMessage.push('expected: ' + failedTest.expected);
+                        resMessage.push('actual: ' + failedTest.actual);
+                    }
+
+                    res.tests.push({
+                        name:     failedTest.testPath + ' ---> ' + failedTest.testName,
+                        result:   false,
+                        message:  failedTest.customMessage || 'test failed',
+                        duration: duration,
+                        expected: failedTest.expected,
+                        actual:   failedTest.actual
+                    });
                     {{/failed}}
                 {{/tests}}
             {{/result}}
         {{/failedTaskReports}}
+
     window.global_test_results = res;
 </script>
 </body>

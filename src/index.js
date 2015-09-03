@@ -105,8 +105,10 @@ export default class QUnitServer {
 
     //Init
     _createServers () {
-        this.hostname            = 'http://127.0.0.1:' + this.serverPort;
-        this.crossDomainHostname = 'http://127.0.0.1:' + this.crossDomainServerPort;
+        var hostname             = process.env.TRAVIS ? 'http://127.0.0.1:' : 'http://localhost:';
+
+        this.hostname            = hostname + this.serverPort;
+        this.crossDomainHostname = hostname + this.crossDomainServerPort;
 
         this.appServer            = http.createServer(this.app).listen(this.serverPort);
         this.crossDomainAppServer = http.createServer(this.crossDomainApp).listen(this.crossDomainServerPort);
@@ -215,6 +217,7 @@ export default class QUnitServer {
     _onReportRequest (res, taskId) {
         var task              = this.tasks[taskId];
         var failedTaskReports = task.reports.filter(report => report.result.failed);
+        var reports           = task.reports;
         var taskPath          = pathToUrl(task.path).replace(/^\//, '');
 
         res.locals = {
@@ -224,6 +227,7 @@ export default class QUnitServer {
             completed:         task.completed,
             passed:            task.completed - failedTaskReports.length,
             failed:            failedTaskReports.length,
+            reports:           reports,
             failedTaskReports: failedTaskReports
         };
 
