@@ -8,13 +8,18 @@ var report           = {
 var nativeXMLHttpRequest = window.XMLHttpRequest;
 
 QUnit.log(function (res) {
+    function replaceQuotas (str) {
+        return str.replace(/'/g, '\\\'');
+    }
+
     var testReport = report.tests.filter(function (item) {
         return item.name === res.name;
     })[0];
 
+
     if (!testReport) {
         testReport = {
-            name:       res.name,
+            name:       replaceQuotas(res.name),
             failed:     false,
             assertions: []
         };
@@ -25,9 +30,9 @@ QUnit.log(function (res) {
     testReport.assertions.push({
         failed:   !res.result,
         module:   res.module,
-        actual:   res.actual,
-        expected: res.expected,
-        message:  res.message,
+        actual:   typeof res.actual === 'string' ? replaceQuotas(res.actual) : res.actual,
+        expected: typeof res.expected === 'string' ? replaceQuotas(res.expected) : res.expected,
+        message:  typeof res.message === 'string' ? replaceQuotas(res.message) : res.message,
         runtime:  res.runtime
     });
 

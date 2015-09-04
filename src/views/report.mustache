@@ -56,21 +56,21 @@
     var taskPath = null;
 
         {{#failedTaskReports}}
-        taskPath = "{{{name}}}";
+        taskPath = '{{{name}}}';
             {{#result}}
             var duration = {{{runtime}}};
                 {{#tests}}
                     {{#failed}}
-                    var name = "{{{name}}}";
+                    var name = '{{{name}}}';
                     failedTest = {
                         testPath: taskPath,
                         testName: name
                     };
                         {{#assertions}}
                             {{#failed}}
-                            var message = "{{{message}}}";
-                            var expected = "{{{expected}}}";
-                            var actual = "{{{actual}}}";
+                            var message = '{{{message}}}';
+                            var expected = '{{{expected}}}';
+                            var actual = '{{{actual}}}';
 
                             if (message)
                                 failedTest.customMessage = message;
