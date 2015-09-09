@@ -2,7 +2,7 @@ import SaucelabsRequestAdapter from './request';
 import wait from '../utils/wait';
 
 const CHECK_RESULTS_TIMEOUT = 1000 * 20;
-const MAX_RESTART_COUNT     = 5;
+const MAX_RESTART_COUNT     = 3;
 
 
 //Job
