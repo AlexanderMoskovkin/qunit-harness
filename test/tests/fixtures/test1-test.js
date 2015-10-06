@@ -1,5 +1,11 @@
+var localVar = 'local';
+
 test('Simple test', function () {
     equal(1, 1);
+});
+
+test('Do not pollute window obj', function () {
+    notEqual(window.localVar, localVar);
 });
 
 asyncTest('test with data', function () {

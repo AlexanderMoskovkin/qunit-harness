@@ -9,15 +9,21 @@
     <script type="text/javascript" src="/qunit-1.18.0.js"></script>
 
     <script type="text/javascript">
-            {{{ globals }}}
+        (function () {
+            {{{globals}}}
+        })();
     </script>
 
     <script type="text/javascript">
+        (function () {
             {{{qunitSetup}}}
+        })();
     </script>
 
     <script type="text/javascript">
+        (function () {
             {{{storeGlobals}}}
+        })();
     </script>
 
     {{# css}}
@@ -29,7 +35,9 @@
     {{/scripts}}
 
     <script type="text/javascript">
+        (function () {
             {{{restoreGlobals}}}
+        })();
     </script>
 </head>
 <body>
@@ -38,7 +46,9 @@
 {{{ markup }}}
 
 <script type="text/javascript">
+    (function () {
         {{{ test }}}
+    })();
 </script>
 </body>
 </html>
