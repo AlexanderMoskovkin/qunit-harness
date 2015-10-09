@@ -357,7 +357,7 @@ export default class QUnitServer {
             timeout:   settings.timeout || curSettings.timeout || 30
         };
 
-        process.stdout.write(this.sauselabsSettings.urls);
+        process.stdout.write(this.hostname + '/run');
 
         return this;
     }
