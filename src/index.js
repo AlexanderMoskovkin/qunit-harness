@@ -113,6 +113,8 @@ export default class QUnitServer {
 
         this.appServer            = http.createServer(this.app).listen(this.serverPort);
         this.crossDomainAppServer = http.createServer(this.crossDomainApp).listen(this.crossDomainServerPort);
+
+        process.stdout.write(this.hostname);
     }
 
     _setupRoutes () {
@@ -354,6 +356,8 @@ export default class QUnitServer {
             urls:      [this.hostname + '/run'],
             timeout:   settings.timeout || curSettings.timeout || 30
         };
+
+        process.stdout.write(this.sauselabsSettings.urls);
 
         return this;
     }
