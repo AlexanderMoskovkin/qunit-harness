@@ -71,12 +71,14 @@
                             var message = '{{{message}}}';
                             var expected = '{{{expected}}}';
                             var actual = '{{{actual}}}';
+                            var source = '{{{source}}}';
 
                             if (message)
                                 failedTest.customMessage = message;
 
                             failedTest.expected = expected;
                             failedTest.actual = actual;
+                            failedTest.source = source;
                             {{/failed}}
                         {{/assertions}}
                     res.errors.push(failedTest);
@@ -94,7 +96,8 @@
                         message:  failedTest.customMessage || 'test failed',
                         duration: duration,
                         expected: failedTest.expected,
-                        actual:   failedTest.actual
+                        actual:   failedTest.actual,
+                        source:   failedTest.source
                     });
                     {{/failed}}
                 {{/tests}}

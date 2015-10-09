@@ -39,7 +39,7 @@ gulp.task('lint', function () {
         .pipe(eslint.failAfterError());
 });
 
-gulp.task('test', ['lint', 'build'], function () {
+gulp.task('test', ['build'], function () {
     require('./test/index');
 });
 

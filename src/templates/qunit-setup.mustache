@@ -33,7 +33,8 @@ QUnit.log(function (res) {
         actual:   typeof res.actual === 'string' ? replaceQuotas(res.actual) : res.actual,
         expected: typeof res.expected === 'string' ? replaceQuotas(res.expected) : res.expected,
         message:  typeof res.message === 'string' ? replaceQuotas(res.message) : res.message,
-        runtime:  res.runtime
+        runtime:  res.runtime,
+        source:   res.source ? res.source.replace(/\n/g, '-----> \\n') : ''
     });
 
     if (!res.result)
