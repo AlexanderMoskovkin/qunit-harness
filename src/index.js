@@ -106,6 +106,8 @@ export default class QUnitServer {
 
     //Init
     _createServers () {
+        this.localhostname = 'http://localhost:' + this.serverPort;
+
         var hostname = process.env.TRAVIS ? `http://${os.hostname()}:` : 'http://localhost:';
 
         this.hostname            = hostname + this.serverPort;
@@ -113,8 +115,6 @@ export default class QUnitServer {
 
         this.appServer            = http.createServer(this.app).listen(this.serverPort);
         this.crossDomainAppServer = http.createServer(this.crossDomainApp).listen(this.crossDomainServerPort);
-
-        process.stdout.write(this.hostname);
     }
 
     _setupRoutes () {
@@ -123,7 +123,10 @@ export default class QUnitServer {
         this.crossDomainApp.get('/*', preventCaching);
 
         this.app.get('/', (req, res) => res.redirect('/fixtures'));
-        this.app.get('/run', (req, res) => this._runTests(res, this.pendingTests.map(item => item)));
+        this.app.get('/start', (req, res) => {
+            return res.redirect(302, this.hostname + '/run-tests');
+        });
+        this.app.get('/run-tests', (req, res) => this._runTests(res, this.pendingTests.map(item => item)));
         this.app.get('/run-dir/:dir', (req, res) => this._runDir(res, decodeURIComponent(req.params['dir'])));
         this.app.post('/test-done/:id', (req, res) => this._onTestDone(res, req.body.report, req.params['id']));
         this.app.get('/report/:id', (req, res) => this._onReportRequest(res, req.params['id']));
@@ -353,11 +356,9 @@ export default class QUnitServer {
             tags:      settings.tags || curSettings.tags || 'master',
             browsers:  settings.browsers || curSettings.browsers || {},
             name:      settings.name || curSettings.name || 'QUnit tests',
-            urls:      [this.hostname + '/run'],
+            urls:      [this.localhostname + '/start'],
             timeout:   settings.timeout || curSettings.timeout || 30
         };
-
-        process.stdout.write(this.hostname + '/run');
 
         return this;
     }
