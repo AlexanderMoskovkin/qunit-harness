@@ -4,6 +4,7 @@ import http from 'http';
 import path from 'path';
 import mustache from 'mustache';
 import hoganExpress from 'hogan-express';
+import os from 'os';
 import * as fs from './utils/fs';
 import readDir from './utils/read-dir';
 import getTests from './utils/get-tests';
@@ -105,7 +106,7 @@ export default class QUnitServer {
 
     //Init
     _createServers () {
-        var hostname = process.env.TRAVIS ? 'http://127.0.0.1:' : 'http://localhost:';
+        var hostname = process.env.TRAVIS ? `http://${os.hostname()}:` : 'http://localhost:';
 
         this.hostname            = hostname + this.serverPort;
         this.crossDomainHostname = hostname + this.crossDomainServerPort;
