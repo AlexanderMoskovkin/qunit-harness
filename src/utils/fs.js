@@ -1,5 +1,6 @@
 import fs from 'fs';
-import Promise from 'promise';
+import Promise from 'pinkie';
+import promisify from 'pify';
 
 export var stat = function (path) {
     return new Promise(resolve => {
@@ -9,7 +10,7 @@ export var stat = function (path) {
     });
 };
 
-export var readdir      = Promise.denodeify(fs.readdir);
-export var readfile     = Promise.denodeify(fs.readFile);
+export var readdir      = promisify(fs.readdir, Promise);
+export var readfile     = promisify(fs.readFile, Promise);
 export var readfileSync = fs.readFileSync;
 

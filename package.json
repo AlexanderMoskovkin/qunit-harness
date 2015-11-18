@@ -1,6 +1,6 @@
 {
   "name": "qunit-harness",
-  "version": "0.1.29",
+  "version": "0.2.0",
   "description": "A library for running qunit tests on a local machine and in the SauceLabs environment.",
   "homepage": "https://github.com/AlexanderMoskovkin/qunit-harness",
   "bugs": "https://github.com/AlexanderMoskovkin/qunit-harness/issues",
@@ -23,7 +23,8 @@
     "express": "^4.13.3",
     "hogan-express": "^0.5.2",
     "mustache": "^2.1.3",
-    "promise": "^7.0.4",
+    "pify": "^2.3.0",
+    "pinkie": "^2.0.1",
     "request": "^2.60.0",
     "sauce-tunnel": "^2.2.3"
   },
@@ -33,6 +34,7 @@
     "gulp": "^3.9.0",
     "gulp-babel": "^5.2.0",
     "gulp-eslint": "^1.0.0",
+    "gulp-webmake": "0.0.4",
     "merge-stream": "^0.1.8"
   },
   "scripts": {

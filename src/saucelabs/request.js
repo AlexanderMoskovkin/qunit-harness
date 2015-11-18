@@ -1,7 +1,8 @@
-import Promise from 'promise';
+import Promise from 'pinkie';
 import request from 'request';
+import promisify from 'pify';
 
-var requestPromised = Promise.denodeify(request);
+var requestPromised = promisify(request, Promise);
 
 export default class SaucelabsRequestAdapter {
     constructor (user, pass) {

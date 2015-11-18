@@ -15,7 +15,7 @@ import reportSauceLabsTests from './saucelabs/report';
 
 
 const VIEWS_PATH                    = path.join(__dirname, 'views');
-const GLOBALS_TEMPLATE_PATH         = path.join(__dirname, 'templates/globals.mustache');
+const GLOBALS_TEMPLATE_PATH         = path.join(__dirname, 'templates/globals.mustache.js');
 const QUNIT_SETUP_TEMPLATE_PATH     = path.join(__dirname, 'templates/qunit-setup.mustache');
 const STORE_GLOBALS_TEMPLATE_PATH   = path.join(__dirname, 'templates/store-globals.mustache');
 const RESTORE_GLOBALS_TEMPLATE_PATH = path.join(__dirname, 'templates/restore-globals.mustache');

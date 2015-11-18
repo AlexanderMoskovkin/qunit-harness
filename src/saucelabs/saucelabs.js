@@ -1,4 +1,4 @@
-import Promise from 'promise';
+import Promise from 'pinkie';
 import SauceTunnel from 'sauce-tunnel';
 import SauceLabsRunner from './runner';
 import wait from '../utils/wait';

@@ -1,9 +1,10 @@
-var path   = require('path');
-var del    = require('del');
-var gulp   = require('gulp');
-var babel  = require('gulp-babel');
-var eslint = require('gulp-eslint');
-var merge  = require('merge-stream');
+var path    = require('path');
+var del     = require('del');
+var gulp    = require('gulp');
+var babel   = require('gulp-babel');
+var eslint  = require('gulp-eslint');
+var webmake = require('gulp-webmake');
+var merge   = require('merge-stream');
 
 gulp.task('clean', function (cb) {
     del('lib', cb);
@@ -17,13 +18,17 @@ gulp.task('copy-vendor', ['clean'], function () {
 
 gulp.task('build', ['lint', 'copy-vendor'], function () {
     var js = gulp
-        .src('src/**/*.js')
+        .src(['src/**/*.js', '!src/**/*.mustache.js'])
         .pipe(babel());
 
     var templates = gulp
         .src('src/**/*.mustache');
 
-    return merge(js, templates)
+    var jsTemplates = gulp
+        .src('src/**/*.mustache.js')
+        .pipe(webmake());
+
+    return merge(js, templates, jsTemplates)
         .pipe(gulp.dest('lib'));
 });
 

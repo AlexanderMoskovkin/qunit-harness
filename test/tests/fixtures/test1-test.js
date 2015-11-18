@@ -142,3 +142,18 @@ asyncTest('configure app', function () {
 
     window.addEventListener('message', onmessage);
 });
+
+asyncTest('test with waiting', function () {
+    var resolved = false;
+
+    window.setTimeout(function () {
+        resolved = true;
+    }, 50);
+
+    window.QUnitGlobals.wait(function () {
+        return resolved;
+    }).then(function () {
+        ok(true);
+        start();
+    });
+});

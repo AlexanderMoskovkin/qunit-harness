@@ -1,3 +1,4 @@
+import Promise from 'pinkie';
 import SaucelabsRequestAdapter from './request';
 import wait from '../utils/wait';
 
