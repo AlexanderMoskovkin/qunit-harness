@@ -73,6 +73,32 @@ qunitHarness
 ```
 
 ##QUnit tests
+####Wait for an async action
+```js
+window.QUnitGlobals.wait(condition);    // returns Promise
+// condition is a function
+// The test will fail with the timeout error if condition returns 'false' within 3000 ms.
+```
+
+Example:
+```js
+asyncTest('test with wait', function () {
+    var resolved = false;
+
+    window.setTimeout(function () {
+        resolved = true;
+    }, 50);
+
+    window.QUnitGlobals.wait(function () {
+            return resolved;
+        })
+        .then(function () {
+            ok(true);
+            start();
+        });
+});
+```
+
 ####Get test server hostname
 ```js
 window.QUnitGlobals.hostname;               //http://localhost:1335/
