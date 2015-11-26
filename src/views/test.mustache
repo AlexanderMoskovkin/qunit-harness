@@ -5,6 +5,66 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <link type="text/css" rel=stylesheet href="/qunit-1.20.0.css">
 
+    <script type="text/javascript">
+        // HACK: (ie9 only) we have discovered an issue with the window.setTimeout function in IE9 on a
+        // Saucelabs virtual machine: sometimes, async functions are called earlier than they should be.
+        // For example, a QUnit call window.setTimeout(timeoutExceededHandler, 30000) raises the handler in less
+        // than a second. It seems that this behavior depends on how fast the VM or the browser are performing.
+        (function (window) {
+            var userAgent = navigator.userAgent.toLowerCase();
+            var isIE9     = userAgent.indexOf('msie 9') > -1;
+
+            if (!isIE9)
+                return;
+
+            var nativeSetTimeout   = window.setTimeout;
+            var nativeClearTimeout = window.clearTimeout;
+            var overriddenTimeouts = {};
+            var eval               = window.eval;
+
+            window.setTimeout = function () {
+                var fn              = arguments[0];
+                var expectedDelay   = arguments[1];
+                var fnArgs          = Array.prototype.slice.call(arguments, 2);
+                var originalTimeout = 0;
+
+                var startTime = Date.now();
+
+                function execute () {
+                    var now         = Date.now();
+                    var timeoutDiff = expectedDelay - (now - startTime);
+
+                    if (timeoutDiff > 200) {
+                        startTime     = now;
+                        expectedDelay = timeoutDiff;
+
+                        overriddenTimeouts[originalTimeout] = nativeSetTimeout.call(window, execute, expectedDelay);
+                    }
+                    else {
+                        if (overriddenTimeouts[originalTimeout])
+                            delete overriddenTimeouts[originalTimeout];
+
+                        if (typeof fn === 'string')
+                            return eval(fn);
+
+                        fn.apply(window, fnArgs);
+                    }
+                }
+
+                originalTimeout = nativeSetTimeout.call(window, execute, expectedDelay);
+
+                return originalTimeout;
+            };
+
+            window.clearTimeout = function (timeout) {
+                if (overriddenTimeouts[timeout])
+                    timeout = overriddenTimeouts[timeout];
+
+                nativeClearTimeout.call(window, timeout);
+            }
+        })(window);
+    </script>
+
     <script type="text/javascript" src="/jquery.js"></script>
     <script type="text/javascript" src="/qunit-1.20.0.js"></script>
 
