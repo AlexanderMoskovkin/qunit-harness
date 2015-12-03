@@ -26,12 +26,12 @@ var qunitHarness = new QUnitHarness
     .port(2000)             //by default 1335
     .crossDomainPort(2001)  //by default 1336
     //add the index.js script content as <script src='/tested-script.js'> to the head of the test page
-    .scripts([{ src: '/tested-script.js', path: '/lib/index.js' }]) 
+    .scripts([{ src: '/tested-script.js', path: '/lib/index.js' }])
     .css([{ src: '/style.css', path: '/lib/style.css' }])
     //extend the qunit server application for test purposes
     .configApp(configQunitServerApp)
     .create();
-    
+
 //Testing in the Saucelabs environment
 //Configure browsers here: https://docs.saucelabs.com/reference/platforms-configurator/
 var BROWSERS = [
@@ -96,6 +96,29 @@ asyncTest('test with wait', function () {
             ok(true);
             start();
         });
+});
+```
+
+####Wait for an iframe action
+```js
+window.QUnitGlobals.waitForIframe(iframe);    // returns Promise
+// iframe is an iframe element to wait for
+// The test will fail with the timeout error if the 'load' event for the iframe is not raised within 10000 ms.
+```
+
+Example:
+```js
+asyncTest('test with wait for iframe', function () {
+    var iframe = document.createElement('iframe');
+
+    iframe.src = window.QUnitGlobals.getResourceUrl('../data/iframe.html');
+
+    document.body.appendChild(iframe);
+
+    window.QUnitGlobals.waitForIframe(iframe).then(function () {
+        ok(true);
+        start();
+    });
 });
 ```
 

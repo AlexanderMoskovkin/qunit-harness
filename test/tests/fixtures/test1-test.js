@@ -157,3 +157,18 @@ asyncTest('test with waiting', function () {
         start();
     });
 });
+
+asyncTest('test with waiting for iframe', function () {
+    var iframe = document.createElement('iframe');
+
+    iframe.src = window.QUnitGlobals.getResourceUrl('../data/iframe.html');
+
+    window.setTimeout(function () {
+        document.body.appendChild(iframe);
+    }, 500);
+
+    window.QUnitGlobals.waitForIframe(iframe).then(function () {
+        ok(true);
+        start();
+    });
+});
