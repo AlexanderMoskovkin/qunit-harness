@@ -172,3 +172,19 @@ asyncTest('test with waiting for iframe', function () {
         start();
     });
 });
+
+asyncTest('test with waiting for cross-domain iframe', function () {
+    var iframe = document.createElement('iframe');
+
+    iframe.src = window.QUnitGlobals.crossDomainHostname +
+                 window.QUnitGlobals.getResourceUrl('../data/cross-domain.html');
+
+    document.body.appendChild(iframe);
+
+    window.setTimeout(function () {
+        window.QUnitGlobals.waitForIframe(iframe).then(function () {
+            ok(true);
+            start();
+        });
+    }, 100);
+});
