@@ -47,8 +47,11 @@ window.QUnitGlobals = {
 
     waitForIframe: function (iframe) {
         return new Promise(function (resolve, reject) {
-            var timeoutId  = null;
-            var intervalId = null;
+            var timeoutId      = null;
+            var isIframeLoaded = false;
+
+            if (!iframe || !iframe.tagName || iframe.tagName.toLowerCase() !== 'iframe')
+                throw 'Incorrect waitForIframe argument';
 
             timeoutId = window.setTimeout(function () {
                 window.clearTimeout(timeoutId);
@@ -56,16 +59,25 @@ window.QUnitGlobals = {
                 start();
             }, WAIT_FOR_IFRAME_TIMEOUT);
 
-            intervalId = window.setInterval(function () {
-                if (iframe && iframe.contentWindow) {
-                    window.clearInterval(intervalId);
+            try {
+                isIframeLoaded = iframe.contentWindow && iframe.contentWindow.document &&
+                                 iframe.contentWindow.document.readyState === 'complete';
+            }
+            catch (e) {
+                //NOTE: if cross-domain iframe raises an error we take it as loaded
+                isIframeLoaded = true
+            }
 
-                    iframe.contentWindow.addEventListener('load', function () {
-                        window.clearTimeout(timeoutId);
-                        resolve();
-                    });
-                }
-            }, CHECK_PREDICATE_INTERVAL);
+            if (isIframeLoaded) {
+                window.clearTimeout(timeoutId);
+                resolve();
+                return;
+            }
+
+            iframe.addEventListener('load', function () {
+                window.clearTimeout(timeoutId);
+                resolve();
+            });
         });
     }
 };
