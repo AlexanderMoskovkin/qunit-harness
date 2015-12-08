@@ -50,11 +50,18 @@ window.QUnitGlobals = {
             var timeoutId      = null;
             var isIframeLoaded = false;
 
+            function loadEventHandler () {
+                window.clearTimeout(timeoutId);
+                iframe.removeEventListener('load', loadEventHandler);
+                resolve();
+            }
+
             if (!iframe || !iframe.tagName || iframe.tagName.toLowerCase() !== 'iframe')
                 throw 'Incorrect waitForIframe argument';
 
             timeoutId = window.setTimeout(function () {
                 window.clearTimeout(timeoutId);
+                iframe.removeEventListener('load', loadEventHandler);
                 ok(false, 'Timeout error');
                 start();
             }, WAIT_FOR_IFRAME_TIMEOUT);
@@ -74,10 +81,7 @@ window.QUnitGlobals = {
                 return;
             }
 
-            iframe.addEventListener('load', function () {
-                window.clearTimeout(timeoutId);
-                resolve();
-            });
+            iframe.addEventListener('load', loadEventHandler);
         });
     }
 };
