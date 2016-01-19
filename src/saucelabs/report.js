@@ -9,7 +9,7 @@ function checkFailures (results) {
         var msg      = [];
         var platform = [platformResults.platform[0], platformResults.platform[1], platformResults.platform[2] ||
                                                                                   ''].join(' ');
-        var url      = platformResults.url;
+        var url      = platformResults.url? platformResults.url : 'There is no url attached.' ;
 
         var runningError = !platformResults.result || typeof platformResults.result === 'string';
         var failed       = runningError || platformResults.result.failed;
@@ -18,8 +18,10 @@ function checkFailures (results) {
         msg.push(platform);
 
         if (runningError) {
-            msg.push(chalk.bold(platformResults.result));
-            globalErrors.push(platformResults.result);
+            var resultErrorMessage = 'There is no test result available.';
+
+            msg.push(chalk.bold(resultErrorMessage));
+            globalErrors.push(resultErrorMessage);
         }
         else {
             msg.push(chalk.bold('Total:'), platformResults.result.total);
