@@ -1,9 +1,20 @@
-import Promise from 'pinkie';
+import wd from 'wd';
 import SaucelabsRequestAdapter from './request';
 import wait from '../utils/wait';
 
-const CHECK_RESULTS_TIMEOUT = 1000 * 20;
-const MAX_RESTART_COUNT     = 3;
+
+const CHECK_TEST_RESULT_DELAY  = 10 * 1000;
+const MAX_JOB_RESTART_COUNT    = 3;
+const BROWSER_INIT_RETRY_DELAY = 30 * 1000;
+const BROWSER_INIT_RETRIES     = 3;
+const BROWSER_INIT_TIMEOUT     = 9 * 60 * 1000;
+
+
+wd.configureHttp({
+    retryDelay: BROWSER_INIT_RETRY_DELAY,
+    retries:    BROWSER_INIT_RETRIES,
+    timeout:    BROWSER_INIT_TIMEOUT
+});
 
 
 //Job
@@ -13,126 +24,143 @@ export default class Job {
             username:         options.username,
             accessKey:        options.accessKey,
             build:            options.build,
-            testName:         options.name,
+            testName:         options.testName,
             tags:             options.tags,
             urls:             options.urls,
-            timeout:          options.timeout,
-            tunnelIdentifier: options.tunnelIdentifier
+            tunnelIdentifier: options.tunnelIdentifier,
+            testsTimeout:     options.timeout * 1000
         };
 
         this.requestAdapter = new SaucelabsRequestAdapter(this.options.username, this.options.accessKey);
         this.platform       = platform;
+        this.browser        = wd.promiseRemote('ondemand.saucelabs.com', 80, options.username, options.accessKey);
 
-        this.taskId       = null;
-        this.status       = Job.STATUSES.INITIALIZED;
-        this.restartCount = 0;
+        this.status         = Job.STATUSES.INITIALIZED;
+        this.restartCount   = 0;
+        this.startTestsTime = null;
     }
 
     static STATUSES = {
-        INITIALIZED: 'initialized',
-        QUEUED:      'queued',
-        IN_PROGRESS: 'in progress',
-        COMPLETED:   'completed',
-        FAILED:      'failed'
+        INIT_BROWSER: 'init browser',
+        INITIALIZED:  'initialized',
+        IN_PROGRESS:  'in progress',
+        COMPLETED:    'completed',
+        FAILED:       'failed'
     };
 
-    _waitForComplete () {
-        var job               = this;
-        var statusRequestData = {
-            'js tests': [this.taskId]
+    async _getTestResult () {
+        var testResult = null;
+
+        while (!testResult) {
+            if (new Date() - this.startTestsTime > this.options.testsTimeout)
+                throw new Error('Test exceeded maximum duration');
+
+            await(wait(CHECK_TEST_RESULT_DELAY));
+
+            testResult = await this.browser.eval('window.global_test_results');
+        }
+
+        return testResult;
+    }
+
+    async _getJobResult () {
+        this.status = Job.STATUSES.IN_PROGRESS;
+
+        this.startTestsTime = new Date();
+
+        var testResult = await this._getTestResult();
+
+        this.status = Job.STATUSES.COMPLETED;
+
+        await this._publishTestResult(testResult);
+
+        return {
+            url:      `https://saucelabs.com/jobs/${this.browser.sessionID}`,
+            platform: this.platform,
+            result:   testResult,
+            job_id:   this.browser.sessionID
         };
-
-        return new Promise(function (resolve, reject) {
-            function checkStatus () {
-                job.requestAdapter.send(SaucelabsRequestAdapter.URLS.STATUS, statusRequestData)
-                    .then(function (body) {
-                        var result  = body['js tests'] && body['js tests'][0];
-                        var restart = false;
-
-                        if (body.completed) {
-                            if (typeof result.result === 'string' &&
-                                result.result.indexOf('Test exceeded maximum duration') > -1) {
-                                job._reportError(result.result + ' ' + result.url);
-                                restart = true;
-                            }
-                            else {
-                                job.status = Job.STATUSES.COMPLETED;
-                                resolve(result);
-                            }
-                        }
-                        else {
-                            var status = result.status;
-
-                            if (status === 'test error') {
-                                job._reportError('saucelabs environment error');
-                                restart = true;
-                            }
-
-                            if (status.indexOf('queued') > -1)
-                                job.status = Job.STATUSES.QUEUED;
-
-                            if (status.indexOf('in progress') > -1)
-                                job.status = Job.STATUSES.IN_PROGRESS;
-
-                            if (!restart)
-                                wait(CHECK_RESULTS_TIMEOUT).then(checkStatus);
-                        }
-
-                        if (restart) {
-                            if (++job.restartCount < MAX_RESTART_COUNT) {
-                                job._restartTask()
-                                    .then(resolve);
-                            }
-                            else {
-                                result.result = 'Tests failed (see the log)';
-                                resolve(result);
-                            }
-                        }
-                    });
-            }
-
-            checkStatus();
-        });
     }
 
     _reportError (error) {
         console.log(`The task (${this.platform}) failed: ${error}`);
     }
 
-    _restartTask () {
-        console.log(`Attempt ${this.restartCount} to restart the task (${this.platform})`);
-        this.requestAdapter.send(SaucelabsRequestAdapter.URLS.STOP_JOB(this.taskId), {});
+    async _publishTestResult (testResult) {
+        var testSuccess = (testResult.errors.length === 0 || Object.keys(testResult.errors).length === 0)
+                          && testResult.failed === 0;
 
-        return this.run();
-    }
-
-
-    run () {
-        var job            = this;
-        var runRequestData = {
-            platforms:           [this.platform],
-            url:                 this.options.urls[0],
-            framework:           'qunit',
-            passed:              true,
-            public:              'public',
-            build:               this.options.build,
-            tags:                this.options.tags,
-            name:                this.options.testName,
-            'tunnel-identifier': this.options.tunnelIdentifier,
-            'max-duration':      this.options.timeout
+        var data = {
+            public:        'public',
+            passed:        testSuccess,
+            'custom-data': {
+                'qunit': testResult
+            }
         };
 
-        return this.requestAdapter.send(SaucelabsRequestAdapter.URLS.RUN, runRequestData)
-            .then(function (body) {
-                var taskIds = body['js tests'];
+        await this.requestAdapter.put(`/v1/${this.options.username}/jobs/${this.browser.sessionID}`, data);
+    }
 
-                if (!taskIds || !taskIds.length)
-                    throw 'Error starting tests through Sauce API: ' + JSON.stringify(body);
+    async run () {
+        var jobResult = null;
+        var jobFailed = false;
 
-                job.taskId = taskIds[0];
+        var initBrowserParams = {
+            name:             this.options.testName,
+            tags:             this.options.tags,
+            build:            this.options.build,
+            platform:         this.platform[0],
+            browserName:      this.platform[1],
+            version:          this.platform[2],
+            tunnelIdentifier: this.options.tunnelIdentifier
+        };
 
-                return job._waitForComplete();
-            });
+        this.status = Job.STATUSES.INIT_BROWSER;
+
+        try {
+            await this.browser.init(initBrowserParams);
+            await this.browser.get(this.options.urls[0]);
+        }
+        catch (error) {
+            this._reportError(`An error occured while the browser was being initialized: ${error}`);
+            jobFailed = true;
+        }
+
+        if (!jobFailed) {
+            try {
+                jobResult = await this._getJobResult();
+            }
+            catch (error) {
+                this._reportError(error);
+                jobFailed = true;
+            }
+            finally {
+                await this.browser.quit();
+            }
+        }
+
+        if (jobFailed) {
+            if (++this.restartCount < MAX_JOB_RESTART_COUNT) {
+                console.log(`Attempt ${this.restartCount} to restart the task (${this.platform})`);
+
+                jobResult = await this.run();
+            }
+            else {
+                this.status = Job.STATUSES.FAILED;
+
+                jobResult = {
+                    platform: this.platform,
+                    job_id:   this.browser.sessionID
+                };
+
+                if (this.status === Job.STATUSES.IN_PROGRESS)
+                    jobResult.url = `https://saucelabs.com/jobs/${this.browser.sessionID}`;
+
+                this.status = Job.STATUSES.FAILED;
+            }
+        }
+
+        return jobResult;
     }
 
     getStatus () {

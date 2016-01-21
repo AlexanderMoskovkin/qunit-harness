@@ -35,10 +35,10 @@ export default class SauceLabsRunner {
 
     _report () {
         var total      = this.jobs.length;
-        var queued     = this.jobs.filter(job => job.getStatus() === Job.STATUSES.QUEUED).length;
         var inProgress = this.jobs.filter(job => job.getStatus() === Job.STATUSES.IN_PROGRESS).length;
         var completed  = this.jobs.filter(job => job.getStatus() === Job.STATUSES.COMPLETED).length;
         var failed     = this.jobs.filter(job => job.getStatus() === Job.STATUSES.FAILED).length;
+        var queued     = total - inProgress - completed - failed;
 
         var message = `Tasks total: ${total}, queued: ${queued}, in progress: ${inProgress}, completed: ${completed}`;
 

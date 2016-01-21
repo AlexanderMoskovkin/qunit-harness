@@ -16,12 +16,12 @@ export default class SaucelabsRequestAdapter {
         STOP_JOB: jobId => `jobs/${jobId}/stop`
     };
 
-    async send (url, data) {
+    async put (url, data) {
         var params = {
-            method: 'POST',
-            url:    ['https://saucelabs.com/rest/v1', this.user, url].join('/'),
-            auth:   { user: this.user, pass: this.pass },
-            json:   data
+            method:  'PUT',
+            uri:     ['https://', this.user, ':', this.pass, '@saucelabs.com/rest', url].join(''),
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify(data)
         };
 
         var result = await requestPromised(params);
@@ -29,14 +29,13 @@ export default class SaucelabsRequestAdapter {
         var statusCode = result.statusCode;
         var body       = result.body;
 
-        if (statusCode !== 200) {
+        if (statusCode !== 200)
             throw [
                 'Unexpected response from the Sauce Labs API.',
                 params.method + ' ' + params.url,
                 'Response status: ' + statusCode,
                 'Body: ' + JSON.stringify(body)
             ].join('\n');
-        }
 
         return body;
     }
