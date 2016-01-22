@@ -134,8 +134,12 @@ export default class Job {
                 this._reportError(error);
                 jobFailed = true;
             }
-            finally {
+            
+            try {
                 await this.browser.quit();
+            }
+            catch (error) {
+                this._reportError(`An error occured while the browser was being closed: ${error}`);
             }
         }
 
