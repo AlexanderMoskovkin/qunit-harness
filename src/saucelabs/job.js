@@ -1,4 +1,5 @@
 import wd from 'wd';
+import promisifyEvent from 'promisify-event'
 import SaucelabsRequestAdapter from './request';
 import wait from '../utils/wait';
 
@@ -72,7 +73,12 @@ export default class Job {
 
         this.status = Job.STATUSES.COMPLETED;
 
-        await this._publishTestResult(testResult);
+        try {
+            await this._publishTestResult(testResult);
+        }
+        catch (error) {
+            this._reportError(`An error occured while the test result was being published: ${error}`);
+        }
 
         return {
             url:      `https://saucelabs.com/jobs/${this.browser.sessionID}`,
@@ -118,7 +124,11 @@ export default class Job {
         this.status = Job.STATUSES.INIT_BROWSER;
 
         try {
-            await this.browser.init(initBrowserParams);
+            var initBrowserPromise = promisifyEvent(this.browser, 'status');
+
+            this.browser.init(initBrowserParams);
+
+            await initBrowserPromise;
             await this.browser.get(this.options.urls[0]);
         }
         catch (error) {
