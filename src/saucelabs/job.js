@@ -58,7 +58,24 @@ export default class Job {
 
             await(wait(CHECK_TEST_RESULT_DELAY));
 
-            testResult = await this.browser.eval('window.global_test_results');
+            try {
+                testResult = await this.browser.eval('window.global_test_results');
+            }
+            catch (error) {
+                var windowErrorMessage = 'window has no properties';
+
+                // NOTE: this error may occur while testing against internet explorer 11.
+                // This may happen because the IE driver sometimes throws an unknown error
+                // when executing an expression with the 'window' object.
+                var ie11ErrorMessage = [
+                    'Error response status: 13, , ',
+                    'UnknownError - An unknown server-side error occurred while processing the command. ',
+                    'Selenium error: JavaScript error (WARNING: The server did not provide any stacktrace information)'
+                ].join('');
+
+                if (error.message.indexOf(windowErrorMessage) < 0 && error.message.indexOf(ie11ErrorMessage) < 0)
+                    throw error;
+            }
         }
 
         return testResult;
@@ -144,7 +161,7 @@ export default class Job {
                 this._reportError(error);
                 jobFailed = true;
             }
-            
+
             try {
                 await this.browser.quit();
             }
