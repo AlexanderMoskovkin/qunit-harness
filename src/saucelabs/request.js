@@ -11,19 +11,13 @@ export default class SaucelabsRequestAdapter {
     }
 
     static URLS = {
-        RUN:      'js-tests',
-        STATUS:   'js-tests/status',
-        STOP_JOB: jobId => `jobs/${jobId}/stop`
+        RUN:         'js-tests',
+        STATUS:      'js-tests/status',
+        STOP_JOB:    jobId => `jobs/${jobId}/stop`,
+        CONCURRENCY: 'concurrency'
     };
 
-    async put (url, data) {
-        var params = {
-            method:  'PUT',
-            uri:     ['https://', this.user, ':', this.pass, '@saucelabs.com/rest', url].join(''),
-            headers: { 'Content-Type': 'application/json' },
-            body:    JSON.stringify(data)
-        };
-
+    async _request (params) {
         var result = await requestPromised(params);
 
         var statusCode = result.statusCode;
@@ -38,5 +32,29 @@ export default class SaucelabsRequestAdapter {
             ].join('\n');
 
         return body;
+    }
+
+    async put (url, data) {
+        var params = {
+            method:  'PUT',
+            uri:     ['https://', this.user, ':', this.pass, '@saucelabs.com/rest', url].join(''),
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify(data)
+        };
+
+        return await this._request(params);
+    }
+
+    async get (url) {
+        var params = {
+            method:  'GET',
+            uri:     `https://saucelabs.com/rest/v1.1/users/${this.user}/${url}`,
+            headers: { 'Content-Type': 'application/json' },
+            auth:    { user: this.user, pass: this.pass }
+        };
+
+        var body = await this._request(params);
+
+        return JSON.parse(body);
     }
 }
