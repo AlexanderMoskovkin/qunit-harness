@@ -9,7 +9,7 @@ function checkFailures (results) {
         var msg      = [];
         var platform = [platformResults.platform[0], platformResults.platform[1], platformResults.platform[2] ||
                                                                                   ''].join(' ');
-        var url      = platformResults.url? platformResults.url : 'There is no url attached.' ;
+        var url      = platformResults.url? platformResults.url : 'there is no url attached' ;
 
         var runningError = !platformResults.result || typeof platformResults.result === 'string';
         var failed       = runningError || platformResults.result.failed;
