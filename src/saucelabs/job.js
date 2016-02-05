@@ -177,8 +177,6 @@ export default class Job {
                 jobResult = await this.run();
             }
             else {
-                this.status = Job.STATUSES.FAILED;
-
                 jobResult = {
                     platform: this.platform,
                     job_id:   this.browser.sessionID
