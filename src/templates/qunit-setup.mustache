@@ -7,6 +7,17 @@ var report           = {
 
 var nativeXMLHttpRequest = window.XMLHttpRequest;
 
+function isDomElement (el) {
+    // NOTE: T184805
+    if (el && typeof el.toString === 'function' && el.toString.toString().indexOf('[native code]') !== -1 &&
+        el.constructor &&
+        (el.constructor.toString().indexOf(' Element') !== -1 || el.constructor.toString().indexOf(' Node') !== -1))
+        return false;
+
+    // NOTE: B252941
+    return !!(el && el.nodeType !== 11 && typeof el.nodeName === 'string' && el.tagName);
+}
+
 QUnit.log(function (res) {
     function replaceQuotas (str) {
         return str.replace(/'/g, '\\\'');
@@ -60,8 +71,12 @@ QUnit.done(function (res) {
             var canNotStringify = false;
 
             try {
-                JSON.stringify(assertion.actual);
-                JSON.stringify(assertion.expected);
+                if(isDomElement(assertion.actual) || isDomElement(assertion.expected))
+                    canNotStringify = true;
+                else {
+                    JSON.stringify(assertion.actual);
+                    JSON.stringify(assertion.expected);
+                }
             }
             catch(err) {
                 canNotStringify = true;
