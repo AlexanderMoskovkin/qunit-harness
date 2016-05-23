@@ -89,7 +89,7 @@ export default class SauceLabsRunner extends EventEmitter {
         var machineLimit         = response.concurrency.self.allowed.overall;
         var reservedMachineCount = response.concurrency.self.current.overall;
 
-        return machineLimit - reservedMachineCount;
+        return Math.max(0, machineLimit - reservedMachineCount);
     }
 
     async _checkForFreeMachines () {
