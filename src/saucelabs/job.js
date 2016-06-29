@@ -1,5 +1,6 @@
 import wd from 'wd';
 import promisifyEvent from 'promisify-event'
+import { assign } from 'lodash';
 import SaucelabsRequestAdapter from './request';
 import wait from '../utils/wait';
 
@@ -20,7 +21,7 @@ wd.configureHttp({
 
 //Job
 export default class Job {
-    constructor (options, platform) {
+    constructor (options, browserInfo) {
         this.options = {
             username:         options.username,
             accessKey:        options.accessKey,
@@ -33,12 +34,18 @@ export default class Job {
         };
 
         this.requestAdapter = new SaucelabsRequestAdapter(this.options.username, this.options.accessKey);
-        this.platform       = platform;
+        this.browserInfo    = browserInfo;
         this.browser        = wd.promiseRemote('ondemand.saucelabs.com', 80, options.username, options.accessKey);
 
         this.status         = Job.STATUSES.INITIALIZED;
         this.restartCount   = 0;
         this.startTestsTime = null;
+
+        var platformName   = browserInfo.platform || browserInfo.platformName || '';
+        var browserName    = browserInfo.browserName || '';
+        var plaformVersion = browserInfo.version || browserInfo.platformVersion || '';
+
+        this.platform = [platformName, browserName, plaformVersion];
     }
 
     static STATUSES = {
@@ -132,11 +139,10 @@ export default class Job {
             name:             this.options.testName,
             tags:             this.options.tags,
             build:            this.options.build,
-            platform:         this.platform[0],
-            browserName:      this.platform[1],
-            version:          this.platform[2],
             tunnelIdentifier: this.options.tunnelIdentifier
         };
+
+        assign(initBrowserParams, this.browserInfo);
 
         this.status = Job.STATUSES.INIT_BROWSER;
 

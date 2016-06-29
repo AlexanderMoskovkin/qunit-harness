@@ -15,10 +15,6 @@ export default class SauceLabsRunner extends EventEmitter {
 
         var browsers = options.browsers || [];
 
-        browsers = browsers.map(function (item) {
-            return [item.platform || '', item.browserName || '', item.version || ''];
-        });
-
         this.options = {
             username:  options.username || '',
             accessKey: options.accessKey || '',
