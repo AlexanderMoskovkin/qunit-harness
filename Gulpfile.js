@@ -56,8 +56,7 @@ gulp.task('saucelabs', ['lint', 'build'], function (done) {
         },
         {
             platform:    'Windows 10',
-            browserName: 'firefox',
-            version:     '46'
+            browserName: 'firefox'
         },
         {
             platform:    'Windows 10',
