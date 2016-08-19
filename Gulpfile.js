@@ -118,10 +118,20 @@ gulp.task('saucelabs', ['lint', 'build'], function (done) {
             return path.join(__dirname, '/test/tests/fixtures', item)
         });
 
+    var afterCallbackCalled = false;
+
+    var after = function () {
+        afterCallbackCalled = true;
+    };
+
     var server = require('./test/index');
 
     function testsDone (err) {
         server.close();
+
+        if (!err && !afterCallbackCalled)
+            err = 'after callback was not called';
+
         done(err);
     }
 
