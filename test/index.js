@@ -11,9 +11,19 @@ var SCRIPT_PATH = path.join(TESTS_DIR, './resources/script.js');
 var CSS_PATH    = path.join(TESTS_DIR, './resources/style.css');
 
 
+var beforeCallbackCalled = false;
+
+function before () {
+    beforeCallbackCalled = true;
+}
+
 function configApp (app) {
     app.post('/custom/:data', function (req, res) {
         res.send(req.params['data']);
+    });
+
+    app.post('/get-before-callback-called', function (req, res) {
+        res.send(beforeCallbackCalled);
     });
 }
 
@@ -24,4 +34,5 @@ module.exports = new QUnitServer()
     .scripts([{ src: '/script.js', path: SCRIPT_PATH }])
     .css([{ src: '/style.css', path: CSS_PATH }])
     .configApp(configApp)
+    .before(before)
     .create();

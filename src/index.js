@@ -95,6 +95,9 @@ export default class QUnitServer {
             css:     []
         };
 
+        this.beforeCallback = null;
+        this.afterCallback  = null;
+
         this.tasks        = {};
         this.tasksCounter = 0;
         this.pendingTests = [];
@@ -346,6 +349,18 @@ export default class QUnitServer {
         return this;
     }
 
+    before (callback) {
+        this.beforeCallback = callback;
+
+        return this;
+    }
+
+    after (callback) {
+        this.afterCallback = callback;
+
+        return this;
+    }
+
     saucelabs (settings) {
         var curSettings = this.sauselabsSettings || {};
 
@@ -371,6 +386,9 @@ export default class QUnitServer {
         this._setupRoutes();
 
         console.log('QUnit server listens on', this.hostname);
+
+        if (typeof this.beforeCallback === 'function')
+            this.beforeCallback();
 
         return this;
     }
@@ -419,6 +437,9 @@ export default class QUnitServer {
     }
 
     close () {
+        if (typeof this.afterCallback === 'function')
+            this.afterCallback();
+
         this.appServer.close();
         this.crossDomainAppServer.close();
     }
