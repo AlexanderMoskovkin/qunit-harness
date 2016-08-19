@@ -18,6 +18,14 @@ function configQunitServerApp (app) {
     });
 }
 
+function before () {
+    // do some stuff when the server is created
+}
+
+function after () {
+    // do some stuff when server is going to be closed
+}
+
 //Local machine testing
 var qunitHarness = new QUnitHarness
     //specify the path to the tests
@@ -30,6 +38,8 @@ var qunitHarness = new QUnitHarness
     .css([{ src: '/style.css', path: '/lib/style.css' }])
     //extend the qunit server application for test purposes
     .configApp(configQunitServerApp)
+    .before(before)
+    .after(after)
     .create();
 
 //Testing in the Saucelabs environment
