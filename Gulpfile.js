@@ -138,6 +138,7 @@ gulp.task('saucelabs', ['lint', 'build'], function (done) {
     server
         .saucelabs(sauceLabsSettings)
         .tests(tests)
+        .after(after)
         .run()
         .then(testsDone)
         .catch(testsDone);
