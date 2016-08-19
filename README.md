@@ -23,7 +23,7 @@ function before () {
 }
 
 function after () {
-    // do some stuff when server is going to be closed
+    // do some stuff when the server is about to be closed
 }
 
 //Local machine testing
