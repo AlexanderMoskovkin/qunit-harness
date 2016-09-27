@@ -64,7 +64,7 @@ window.QUnitGlobals = {
                 iframe.removeEventListener('load', loadEventHandler);
                 ok(false, 'Timeout error');
                 start();
-            }, timeout || WAIT_FOR_IFRAME_TIMEOUT);
+            }, timeout === void 0 ? WAIT_FOR_IFRAME_TIMEOUT : timeout);
 
             try {
                 isIframeLoaded = iframe.contentWindow && iframe.contentWindow.document &&
