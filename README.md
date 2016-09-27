@@ -111,13 +111,16 @@ asyncTest('test with wait', function () {
 
 ####Wait for an iframe action
 ```js
-window.QUnitGlobals.waitForIframe(iframe);    // returns Promise
+window.QUnitGlobals.waitForIframe(iframe, timeout);    // returns Promise
 // iframe is an iframe element to wait for
-// The test will fail with the timeout error if the 'load' event for the iframe is not raised within 10000 ms.
+// The test will fail with the timeout error if the 'load' event for the iframe is not raised within <timeout> or
+// window.QUnitGlobals.WAIT_FOR_IFRAME_TIMEOUT ms.
 ```
 
 Example:
 ```js
+window.QUnitGlobals.WAIT_FOR_IFRAME_TIMEOUT = 5000;
+
 asyncTest('test with wait for iframe', function () {
     var iframe = document.createElement('iframe');
 
