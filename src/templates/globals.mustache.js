@@ -1,8 +1,8 @@
 var Promise = require('pinkie');
 
-var WAIT_TIMEOUT                    = 3000;
-var DEFAULT_WAIT_FOR_IFRAME_TIMEOUT = 10000;
-var CHECK_PREDICATE_INTERVAL        = 50;
+var WAIT_TIMEOUT             = 3000;
+var WAIT_FOR_IFRAME_TIMEOUT  = 10000;
+var CHECK_PREDICATE_INTERVAL = 50;
 
 window.QUnitGlobals = {
     _taskId:   '{{{taskId}}}',
@@ -64,7 +64,7 @@ window.QUnitGlobals = {
                 iframe.removeEventListener('load', loadEventHandler);
                 ok(false, 'Timeout error');
                 start();
-            }, timeout || DEFAULT_WAIT_FOR_IFRAME_TIMEOUT);
+            }, timeout || WAIT_FOR_IFRAME_TIMEOUT);
 
             try {
                 isIframeLoaded = iframe.contentWindow && iframe.contentWindow.document &&
@@ -85,5 +85,5 @@ window.QUnitGlobals = {
         });
     },
 
-    DEFAULT_WAIT_FOR_IFRAME_TIMEOUT: DEFAULT_WAIT_FOR_IFRAME_TIMEOUT
+    WAIT_FOR_IFRAME_TIMEOUT: WAIT_FOR_IFRAME_TIMEOUT
 };
