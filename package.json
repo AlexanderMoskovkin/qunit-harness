@@ -1,6 +1,6 @@
 {
   "name": "qunit-harness",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "A library for running qunit tests on a local machine and in the SauceLabs environment.",
   "homepage": "https://github.com/AlexanderMoskovkin/qunit-harness",
   "bugs": "https://github.com/AlexanderMoskovkin/qunit-harness/issues",

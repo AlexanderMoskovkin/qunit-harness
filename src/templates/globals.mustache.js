@@ -45,7 +45,7 @@ window.QUnitGlobals = {
         });
     },
 
-    waitForIframe: function (iframe) {
+    waitForIframe: function (iframe, timeout) {
         return new Promise(function (resolve, reject) {
             var timeoutId      = null;
             var isIframeLoaded = false;
@@ -64,7 +64,7 @@ window.QUnitGlobals = {
                 iframe.removeEventListener('load', loadEventHandler);
                 ok(false, 'Timeout error');
                 start();
-            }, WAIT_FOR_IFRAME_TIMEOUT);
+            }, timeout === void 0 ? WAIT_FOR_IFRAME_TIMEOUT : timeout);
 
             try {
                 isIframeLoaded = iframe.contentWindow && iframe.contentWindow.document &&
@@ -83,5 +83,7 @@ window.QUnitGlobals = {
 
             iframe.addEventListener('load', loadEventHandler);
         });
-    }
+    },
+
+    WAIT_FOR_IFRAME_TIMEOUT: WAIT_FOR_IFRAME_TIMEOUT
 };
