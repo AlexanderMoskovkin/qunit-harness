@@ -85,9 +85,9 @@ qunitHarness
 ##QUnit tests
 ####Wait for an async action
 ```js
-window.QUnitGlobals.wait(condition);    // returns Promise
+window.QUnitGlobals.wait(condition, ms);    // returns Promise
 // condition is a function
-// The test will fail with the timeout error if condition returns 'false' within 3000 ms.
+// The test will fail with the timeout error if 'condition' returns 'false' within 'ms' milliseconds (3000 ms by default).
 ```
 
 Example:

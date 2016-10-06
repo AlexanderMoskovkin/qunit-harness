@@ -23,8 +23,8 @@ window.QUnitGlobals = {
         ].join('');
     },
 
-    wait: function (condition) {
-        return new Promise(function (resolve, reject) {
+    wait: function (condition, ms) {
+        return new Promise(function (resolve) {
             var timeoutId  = null;
             var intervalId = null;
 
@@ -33,7 +33,7 @@ window.QUnitGlobals = {
                 window.clearTimeout(timeoutId);
                 ok(false, 'Timeout error');
                 start();
-            }, WAIT_TIMEOUT);
+            }, ms === void 0 ? WAIT_TIMEOUT : ms);
 
             intervalId = window.setInterval(function () {
                 if (condition()) {
