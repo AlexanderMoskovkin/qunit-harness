@@ -4,11 +4,11 @@ A library for running qunit tests on a local machine and in the [SauceLabs](http
 
 [![Build Status](https://travis-ci.org/AlexanderMoskovkin/qunit-harness.svg)](https://travis-ci.org/AlexanderMoskovkin/qunit-harness)
 
-##Install
+## Install
 
 `$ npm install qunit-harness`
 
-##Usage
+## Usage
 ```js
 var QUnitHarness = require('qunit-harness');
 
@@ -82,8 +82,8 @@ qunitHarness
     });
 ```
 
-##QUnit tests
-####Wait for an async action
+## QUnit tests
+#### Wait for an async action
 ```js
 window.QUnitGlobals.wait(condition, ms);    // returns Promise
 // condition is a function
@@ -109,7 +109,7 @@ asyncTest('test with wait', function () {
 });
 ```
 
-####Wait for an iframe action
+#### Wait for an iframe action
 ```js
 window.QUnitGlobals.waitForIframe(iframe, timeout);    // returns Promise
 // iframe is an iframe element to wait for
@@ -135,13 +135,13 @@ asyncTest('test with wait for iframe', function () {
 });
 ```
 
-####Get test server hostname
+#### Get test server hostname
 ```js
 window.QUnitGlobals.hostname;               //http://localhost:1335/
 window.QUnitGlobals.crossDomainHostname;   //http://localhost:1336/
 ```
 
-####Get test resource
+#### Get test resource
 ```js
 window.QUnitGlobals.getResourceUrl(pathToResourceFile[, urlAlias])
 ```
