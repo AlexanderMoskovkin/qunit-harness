@@ -22,7 +22,6 @@ const GLOBALS_TEMPLATE_PATH         = path.join(__dirname, 'templates/globals.mu
 const QUNIT_SETUP_TEMPLATE_PATH     = path.join(__dirname, 'templates/qunit-setup.mustache');
 const STORE_GLOBALS_TEMPLATE_PATH   = path.join(__dirname, 'templates/store-globals.mustache');
 const RESTORE_GLOBALS_TEMPLATE_PATH = path.join(__dirname, 'templates/restore-globals.mustache');
-const REPORT_TEMPLATE_PATH          = path.join(VIEWS_PATH, 'cli-report.mustache');
 
 
 //Globals
@@ -230,7 +229,7 @@ export default class QUnitServer extends EventEmitter {
             var reports           = task.reports;
             var taskPath          = pathToUrl(task.path).replace(/^\//, '');
 
-            this.emit('taskDone', /*mustache.render(this.reportTemplate, */{
+            this.emit('taskDone', {
                 id:                taskId,
                 taskPath:          taskPath,
                 encodedTaskPath:   encodeURIComponent(taskPath),
@@ -240,7 +239,7 @@ export default class QUnitServer extends EventEmitter {
                 failed:            failedTaskReports.length,
                 reports:           reports,
                 failedTaskReports: failedTaskReports
-            }/*)*/);
+            });
         }
         else
             redirectUrl = '/report/' + taskId;

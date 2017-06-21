@@ -11,7 +11,8 @@ function checkFailures (results) {
         var failed       = runningError || result.failed;
 
         msg.push(chalk.bold(failed ? chalk.red('FAILURES:') : chalk.green('OK:')));
-        msg.push(platform);
+        msg.push(chalk.bold('Worker:'));
+        msg.push(`"${platform}"`);
 
         if (runningError) {
             var resultErrorMessage = 'There is no test result available.';
