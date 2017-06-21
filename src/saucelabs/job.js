@@ -101,7 +101,7 @@ export default class Job {
             await this._publishTestResult(testResult);
         }
         catch (error) {
-            this._reportError(`An error occured while the test result was being published: ${error}`);
+            this._reportError(`An error occurred while the test result was being published: ${error}`);
         }
 
         return {

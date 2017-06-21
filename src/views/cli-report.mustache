@@ -1,33 +1,26 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>QUnitReport#{{{id}}}</title>
-</head>
-<body>
-<h1>Results:</h1>
+Results:
 
-<h2><a href="/{{{taskPath}}}">{{{taskPath}}}</a></h2>
+{{{taskPath}}}
 
-<b>Total: </b> {{{total}}} <br/>
-<b>Completed: </b> {{{completed}}} <br/>
-<b>Success: </b> {{{passed}}} <br/>
+Total: {{{total}}}
+Completed: {{{completed}}}
+Success: {{{passed}}}
 
 {{#failed}}
-    <h2>Failed:</h2>
+    Failed:
     {{#failedTaskReports}}
-        ----------<a href="{{{name}}}" target="_blank"><b>{{{name}}}</b></a>----------<br/>
+        ----------{{{name}}}----------
         {{#result}}
             {{#tests}}
                 {{#failed}}
-                    <b>Test name:</b> {{{name}}} <br/>
+                    Test name: {{{name}}}
 
                     {{#assertions}}
                         {{#failed}}
-                            {{#module}}<b>Module: </b>{{{module}}}<br/>{{/module}}
-                            {{#message}}<b>Message: </b>{{{message}}}<br/>{{/message}}
-                            {{#expected}}<b>Expected: </b>{{{expected}}}<br/>{{/expected}}
-                            <b>Actual: </b>{{{actual}}}<br/><br/>
+                            {{#module}}Module: {{{module}}}<br/>{{/module}}
+                            {{#message}}Message: {{{message}}}<br/>{{/message}}
+                            {{#expected}}Expected: {{{expected}}}<br/>{{/expected}}
+                            Actual: {{{actual}}}
                         {{/failed}}
                     {{/assertions}}
                 {{/failed}}
@@ -36,10 +29,9 @@
     {{/failedTaskReports}}
 {{/failed}}
 
-<h2><a href="/run-dir/{{{encodedTaskPath}}}">Restart</a></h2>
+{{{encodedTaskPath}}}
 
 <!-- Sauce labs report -->
-<script type="text/javascript">
     var passedCount = {{{passed}}};
     var totalCount = {{{total}}};
     var failedCount = {{{failed}}};
@@ -104,7 +96,3 @@
             {{/result}}
         {{/failedTaskReports}}
 
-    window.global_test_results = res;
-</script>
-</body>
-</html>
