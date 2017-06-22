@@ -94,7 +94,6 @@ export default class QUnitServer extends EventEmitter {
         this.qunitSetupTemplate     = fs.readfileSync(QUNIT_SETUP_TEMPLATE_PATH, 'utf-8');
         this.storeGlobalsTemplate   = fs.readfileSync(STORE_GLOBALS_TEMPLATE_PATH, 'utf-8');
         this.restoreGlobalsTemplate = fs.readfileSync(RESTORE_GLOBALS_TEMPLATE_PATH, 'utf-8');
-        this.reportTemplate         = fs.readfileSync(REPORT_TEMPLATE_PATH, 'utf-8');
 
         this.testResources = {
             scripts: [],

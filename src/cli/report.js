@@ -56,18 +56,6 @@ ${source}
         }
 
         console.log(msg.join(' '));
-
-        if (!runningError && result.errors) {
-            //NOTE: https://support.saucelabs.com/customer/en/portal/private/cases/31354
-            var errors = typeof result.errors.length !== 'undefined' ?
-                         result.errors :
-                         Object.keys(result.errors).map(index => result.errors[index]);
-
-            errors.forEach(function (error) {
-                error.platform = platform;
-                testErrors.push(error);
-            });
-        }
     });
 
     return { globalErrors, testErrors };
