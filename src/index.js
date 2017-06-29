@@ -221,8 +221,11 @@ export default class QUnitServer extends EventEmitter {
 
         var redirectUrl = null;
 
-        if (task.tests.length) {
+        if (task.tests.length)
             redirectUrl = pathToUrl('/fixtures/' + path.relative(this.basePath, task.tests[0]) + '?taskId=' + taskId);
+
+        else {
+            redirectUrl = '/report/' + taskId;
 
             var failedTaskReports = task.reports.filter(report => report.result.failed);
             var reports           = task.reports;
@@ -240,8 +243,6 @@ export default class QUnitServer extends EventEmitter {
                 failedTaskReports: failedTaskReports
             });
         }
-        else
-            redirectUrl = '/report/' + taskId;
 
         res.set('Content-Type', contentTypes['default']);
         res.end(redirectUrl);
@@ -333,7 +334,6 @@ export default class QUnitServer extends EventEmitter {
             scripts:        this.testResources.scripts,
             css:            this.testResources.css
         };
-        res.render('test');
     }
 
 
@@ -412,7 +412,7 @@ export default class QUnitServer extends EventEmitter {
 
         this.cliSettings = {
             browsers: settings.browsers || curSettings.browsers || {},
-            startUrl: [this.localhostname + '/run-tests'],
+            startUrl: [this.hostname + '/run-tests'],
             timeout:  settings.timeout || curSettings.timeout || 30
         };
 

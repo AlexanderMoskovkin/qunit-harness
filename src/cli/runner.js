@@ -61,7 +61,8 @@ export default class CLIRunner extends EventEmitter {
                     this.jobResults = this.jobResults.concat(result);
 
                     this.emit('job-done')
-                });
+                })
+                .catch(console.log);
         });
     }
 

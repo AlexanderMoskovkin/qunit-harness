@@ -152,10 +152,7 @@ gulp.task('cli', ['lint', 'build'], function (done) {
             { browserInfo: browsers['firefox'], browserName: 'firefox' }
         ];
 
-        var cliSettings = {
-            browsers: targetBrowsers,
-            timeout:  60
-        };
+        var cliSettings = { browsers: targetBrowsers, timeout: 60 };
 
         var tests = ['/test1-test.js', '/test2-test/index-test.js', '/dir1/test3-test.js']
             .map(function (item) {
