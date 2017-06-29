@@ -42,7 +42,7 @@
     "testcafe-browser-tools": "^1.2.2"
   },
   "scripts": {
-    "test": "gulp saucelabs"
+    "test": "gulp saucelabs && gulp cli"
   },
   "main": "./lib/index"
 }

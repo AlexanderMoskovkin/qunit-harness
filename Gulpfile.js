@@ -149,7 +149,6 @@ gulp.task('cli', ['lint', 'build'], function (done) {
     listBrowsers().then(function (browsers) {
         var targetBrowsers = [
             { browserInfo: browsers['chrome'], browserName: 'chrome' },
-            { browserInfo: browsers['ie'], browserName: 'ie' },
             { browserInfo: browsers['firefox'], browserName: 'firefox' }
         ];
 
