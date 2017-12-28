@@ -56,7 +56,7 @@ export default class SauceLabsRunner extends EventEmitter {
         return this.jobs.filter(job => job.getStatus() === Job.STATUSES.FAILED).length;
     }
 
-    _report () {
+    _outputCurrentTaskStatus () {
         var total      = this.jobs.length;
         var inProgress = this._getInProgressJobsCount();
         var completed  = this._getCompletedJobsCount();
@@ -71,12 +71,12 @@ export default class SauceLabsRunner extends EventEmitter {
         console.log(message);
     }
 
-    _runReporting () {
+    _runCurrentTaskStatusReporting () {
         var accountUrl = `https://saucelabs.com/u/${this.options.username}`;
 
         console.log(`See the progress: ${accountUrl} (session: "${this.options.testName}", build: "${this.options.build}")`);
 
-        this.reportingInterval = setInterval(() => this._report(), REPORTING_TIMEOUT);
+        this.reportingInterval = setInterval(() => this._outputCurrentTaskStatus(), REPORTING_TIMEOUT);
     }
 
     async _getFreeMachineCount () {
@@ -132,7 +132,7 @@ export default class SauceLabsRunner extends EventEmitter {
     async runTests () {
         this.jobs = this.options.browsers.map(browser => new Job(this.options, browser));
 
-        this._runReporting();
+        this._runCurrentTaskStatusReporting();
 
         try {
             var jobsDonePromise = promisifyEvent(this, 'done');

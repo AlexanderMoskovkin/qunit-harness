@@ -9,9 +9,12 @@ import * as fs from './utils/fs';
 import readDir from './utils/read-dir';
 import getTests from './utils/get-tests';
 import pathToUrl from './utils/path-to-url';
+import { EventEmitter } from 'events';
 
 import * as saucelabs from './saucelabs/saucelabs';
+import * as cli from './cli';
 import reportSauceLabsTests from './saucelabs/report';
+import reportCLITests from './cli/report';
 
 
 const VIEWS_PATH                    = path.join(__dirname, 'views');
@@ -62,8 +65,10 @@ async function getFile (res, filePath) {
 }
 
 //QUnitServer
-export default class QUnitServer {
+export default class QUnitServer extends EventEmitter {
     constructor () {
+        super();
+
         this.serverPort            = 1335;
         this.crossDomainServerPort = 1336;
         this.hostname              = '';
@@ -129,7 +134,7 @@ export default class QUnitServer {
         this.app.get('/start', (req, res) => {
             return res.redirect(302, this.hostname + '/run-tests');
         });
-        this.app.get('/run-tests', (req, res) => this._runTests(res, this.pendingTests.map(item => item)));
+        this.app.get('/run-tests', (req, res) => this._runTests(req, res, this.pendingTests.map(item => item)));
         this.app.get('/run-dir/:dir', (req, res) => this._runDir(res, decodeURIComponent(req.params['dir'])));
         this.app.post('/test-done/:id', (req, res) => this._onTestDone(res, req.body.report, req.params['id']));
         this.app.get('/report/:id', (req, res) => this._onReportRequest(res, req.params['id']));
@@ -214,10 +219,30 @@ export default class QUnitServer {
 
         task.tests.shift();
 
-        var redirectUrl = task.tests.length ?
-                          pathToUrl('/fixtures/' + path.relative(this.basePath, task.tests[0]) + '?taskId=' + taskId) :
-                          '/report/' + taskId;
+        var redirectUrl = null;
 
+        if (task.tests.length)
+            redirectUrl = pathToUrl('/fixtures/' + path.relative(this.basePath, task.tests[0]) + '?taskId=' + taskId);
+
+        else {
+            redirectUrl = '/report/' + taskId;
+
+            var failedTaskReports = task.reports.filter(report => report.result.failed);
+            var reports           = task.reports;
+            var taskPath          = pathToUrl(task.path).replace(/^\//, '');
+
+            this.emit('taskDone', {
+                id:                taskId,
+                taskPath:          taskPath,
+                encodedTaskPath:   encodeURIComponent(taskPath),
+                total:             task.total,
+                completed:         task.completed,
+                passed:            task.completed - failedTaskReports.length,
+                failed:            failedTaskReports.length,
+                reports:           reports,
+                failedTaskReports: failedTaskReports
+            });
+        }
 
         res.set('Content-Type', contentTypes['default']);
         res.end(redirectUrl);
@@ -230,6 +255,7 @@ export default class QUnitServer {
         var taskPath          = pathToUrl(task.path).replace(/^\//, '');
 
         res.locals = {
+            id:                taskId,
             taskPath:          taskPath,
             encodedTaskPath:   encodeURIComponent(taskPath),
             total:             task.total,
@@ -256,7 +282,9 @@ export default class QUnitServer {
         await this._runTests(res, tests, relativeDir);
     }
 
-    async _runTests (res, tests, dir) {
+    async _runTests (req, res, tests, dir) {
+        var browserName = req.query.browserName || '';
+
         var task = {
             id:        ++this.tasksCounter,
             path:      path.join('/fixtures', dir || ''),
@@ -267,6 +295,8 @@ export default class QUnitServer {
         };
 
         this.tasks[task.id] = task;
+
+        this.emit('startedWorker', browserName, task.id.toString());
 
         await this._runTest(res, tests[0], task.id);
     }
@@ -304,7 +334,6 @@ export default class QUnitServer {
             scripts:        this.testResources.scripts,
             css:            this.testResources.css
         };
-        res.render('test');
     }
 
 
@@ -378,6 +407,18 @@ export default class QUnitServer {
         return this;
     }
 
+    cli (settings) {
+        var curSettings = this.cliSettings || {};
+
+        this.cliSettings = {
+            browsers: settings.browsers || curSettings.browsers || {},
+            startUrl: [this.hostname + '/run-tests'],
+            timeout:  settings.timeout || curSettings.timeout || 30
+        };
+
+        return this;
+    }
+
     create () {
         if (!this.basePath)
             throw 'fixtures path is not defined';
@@ -399,33 +440,50 @@ export default class QUnitServer {
     }
 
     async run () {
-        if (!this.sauselabsSettings)
+        if (!this.sauselabsSettings && !this.cliSettings)
             return;
 
         var report = null;
         var error  = null;
 
-        var tunnel = await saucelabs.openTunnel(this.sauselabsSettings);
+        if (this.sauselabsSettings) {
+            var tunnel = await saucelabs.openTunnel(this.sauselabsSettings);
 
-        try {
-            report = await saucelabs.run(this.sauselabsSettings);
-        }
-        catch (err) {
-            error = err;
+            try {
+                report = await saucelabs.run(this.sauselabsSettings);
+            }
+            catch (err) {
+                error = err;
+            }
+
+            try {
+                saucelabs.closeTunnel(tunnel);
+            }
+            catch (err) {
+                console.log('ERROR: Can not close saucelabs tunnel:', err);
+            }
         }
 
-        try {
-            saucelabs.closeTunnel(tunnel);
-        }
-        catch (err) {
-            console.log('ERROR: Can not close saucelabs tunnel:', err);
+        else {
+            try {
+                report = await cli.run(this.cliSettings, this);
+            }
+            catch (err) {
+                error = err;
+            }
         }
 
         if (error)
             throw error;
 
         try {
-            var reportRes = reportSauceLabsTests(report);
+            var reportRes = null;
+
+            if (this.sauselabsSettings)
+                reportRes = reportSauceLabsTests(report);
+
+            else
+                reportRes = reportCLITests(report);
 
         }
         catch (err) {
@@ -442,5 +500,16 @@ export default class QUnitServer {
 
         this.appServer.close();
         this.crossDomainAppServer.close();
+
+        if (this.cliSettings) {
+            Object.keys(this.tasks).forEach(taskId => {
+                var task = this.tasks[taskId];
+
+                if (task.reports.some(report => report.result.failed))
+                    process.exit(-1);
+            });
+
+            process.exit(0);
+        }
     }
 };

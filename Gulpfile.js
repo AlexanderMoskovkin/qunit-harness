@@ -1,10 +1,11 @@
-var path    = require('path');
-var del     = require('del');
-var gulp    = require('gulp');
-var babel   = require('gulp-babel');
-var eslint  = require('gulp-eslint');
-var webmake = require('gulp-webmake');
-var merge   = require('merge-stream');
+var path         = require('path');
+var del          = require('del');
+var gulp         = require('gulp');
+var babel        = require('gulp-babel');
+var eslint       = require('gulp-eslint');
+var webmake      = require('gulp-webmake');
+var merge        = require('merge-stream');
+var listBrowsers = require('testcafe-browser-tools').getInstallations;
 
 gulp.task('clean', function (cb) {
     del('lib', cb);
@@ -142,4 +143,45 @@ gulp.task('saucelabs', ['lint', 'build'], function (done) {
         .run()
         .then(testsDone)
         .catch(testsDone);
+});
+
+gulp.task('cli', ['lint', 'build'], function (done) {
+    listBrowsers().then(function (browsers) {
+        var targetBrowsers = [
+            { browserInfo: browsers['chrome'], browserName: 'chrome' },
+            { browserInfo: browsers['firefox'], browserName: 'firefox' }
+        ];
+
+        var cliSettings = { browsers: targetBrowsers, timeout: 60 };
+
+        var tests = ['/test1-test.js', '/test2-test/index-test.js', '/dir1/test3-test.js']
+            .map(function (item) {
+                return path.join(__dirname, '/test/tests/fixtures', item)
+            });
+
+        var afterCallbackCalled = false;
+
+        var after = function () {
+            afterCallbackCalled = true;
+        };
+
+        var server = require('./test/index');
+
+        function testsDone (err) {
+            server.close();
+
+            if (!err && !afterCallbackCalled)
+                err = 'after callback was not called';
+
+            done(err);
+        }
+
+        server
+            .cli(cliSettings)
+            .tests(tests)
+            .after(after)
+            .run()
+            .then(testsDone)
+            .catch(testsDone);
+    });
 });

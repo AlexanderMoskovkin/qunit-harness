@@ -23,15 +23,15 @@ export default class SaucelabsRequestAdapter {
         var statusCode = result.statusCode;
         var body       = result.body;
 
-        if (statusCode !== 200)
-            throw [
-                'Unexpected response from the Sauce Labs API.',
-                params.method + ' ' + params.url,
-                'Response status: ' + statusCode,
-                'Body: ' + JSON.stringify(body)
-            ].join('\n');
+        if (statusCode === 200)
+            return body;
 
-        return body;
+        throw [
+            'Unexpected response from the Sauce Labs API.',
+            params.method + ' ' + params.url,
+            'Response status: ' + statusCode,
+            'Body: ' + JSON.stringify(body)
+        ].join('\n');
     }
 
     async put (url, data) {

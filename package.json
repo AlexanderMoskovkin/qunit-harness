@@ -38,10 +38,11 @@
     "gulp-babel": "^5.2.0",
     "gulp-eslint": "^1.0.0",
     "gulp-webmake": "0.0.4",
-    "merge-stream": "^0.1.8"
+    "merge-stream": "^0.1.8",
+    "testcafe-browser-tools": "^1.2.2"
   },
   "scripts": {
-    "test": "gulp saucelabs"
+    "test": "gulp saucelabs && gulp cli"
   },
   "main": "./lib/index"
 }
