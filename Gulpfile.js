@@ -53,6 +53,10 @@ gulp.task('saucelabs', ['lint', 'build'], function (done) {
     var BROWSERS = [
         {
             platform:    'Windows 10',
+            browserName: 'microsoftedge'
+        },
+        {
+            platform:    'Windows 10',
             browserName: 'chrome'
         },
         {
@@ -65,42 +69,21 @@ gulp.task('saucelabs', ['lint', 'build'], function (done) {
             version:     '11.0'
         },
         {
-            platform:    'Windows 8',
-            browserName: 'internet explorer',
-            version:     '10.0'
-        },
-        {
-            platform:    'Windows 10',
-            browserName: 'microsoftedge',
-            version:     '20.10240'
-        },
-        /*{
-            platform:    'Windows 7',
-            browserName: 'internet explorer',
-            version:     '9.0'
-        },
-        */{
-            browserName: 'iphone',
-            platform:    'OS X 10.10',
-            version:     '7.1',
-            deviceName:  'iPhone Simulator'
-        },
-        {
+            platform:    'OS X 10.12',
             browserName: 'safari',
-            platform:    'OS X 10.10',
-            version:     '8.0'
+            version:     '11.0'
         },
         {
-            browserName: 'iphone',
-            platform:    'OS X 10.10',
-            version:     '8.1',
-            deviceName:  'iPad Simulator'
-        },
-        {
-            browserName: 'android',
             platform:    'Linux',
+            browserName: 'android',
             version:     '5.1',
             deviceName:  'Android Emulator'
+        },
+        {
+            platform:    'iOS',
+            browserName: 'Safari',
+            version:     '10.3',
+            deviceName:  'iPhone 7 Plus Simulator'
         }
     ];
 
