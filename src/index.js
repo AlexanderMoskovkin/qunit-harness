@@ -135,7 +135,7 @@ export default class QUnitServer extends EventEmitter {
             return res.redirect(302, this.hostname + '/run-tests');
         });
         this.app.get('/run-tests', (req, res) => this._runTests(req, res, this.pendingTests.map(item => item)));
-        this.app.get('/run-dir/:dir', (req, res) => this._runDir(res, decodeURIComponent(req.params['dir'])));
+        this.app.get('/run-dir/:dir', (req, res) => this._runDir(req, res, decodeURIComponent(req.params['dir'])));
         this.app.post('/test-done/:id', (req, res) => this._onTestDone(res, req.body.report, req.params['id']));
         this.app.get('/report/:id', (req, res) => this._onReportRequest(res, req.params['id']));
 
@@ -271,7 +271,7 @@ export default class QUnitServer extends EventEmitter {
 
 
     //Test running
-    async _runDir (res, dir) {
+    async _runDir (req, res, dir) {
         var relativeDir = path.relative('/fixtures', '/' + dir + '/');
         var testsPath   = path.join(this.basePath, relativeDir);
         var tests       = await getTests(testsPath, path.join(this.basePath));
@@ -279,7 +279,7 @@ export default class QUnitServer extends EventEmitter {
         if (!tests.length)
             return res.redirect(302, this.basePath + dir);
 
-        await this._runTests(res, tests, relativeDir);
+        await this._runTests(req, res, tests, relativeDir);
     }
 
     async _runTests (req, res, tests, dir) {
@@ -334,6 +334,8 @@ export default class QUnitServer extends EventEmitter {
             scripts:        this.testResources.scripts,
             css:            this.testResources.css
         };
+
+        res.render('test');
     }
 
 
