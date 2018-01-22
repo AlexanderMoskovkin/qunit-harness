@@ -83,7 +83,7 @@ qunitHarness
 
 //Testing in local environment
 //Browser opening mechanism uses the "open" method from "testcafe-browser-tools" library.
-//For more information about "browserInfo" options, see https://github.com/DevExpress/testcafe-browser-tools/blob/b11784e722b370de55473ca91f32373b95821bab/API.md#open 
+//For more information about "browserInfo" options, see https://github.com/DevExpress/testcafe-browser-tools/blob/master/API.md#open 
 var BROWSERS = [
   { 
       browserName: 'chrome',
