@@ -80,6 +80,43 @@ qunitHarness
     .catch(function (err) {
         console.log(err);
     });
+
+//Testing in local environment
+//Browser opening mechanism uses the "open" method from "testcafe-browser-tools" library.
+//For more information about "browserInfo" options, see https://github.com/DevExpress/testcafe-browser-tools/blob/b11784e722b370de55473ca91f32373b95821bab/API.md#open 
+var BROWSERS = [
+  { 
+      browserName: 'chrome',
+      browserInfo: {
+          path: '<path_to_chrome_dir>\\chrome.exe',
+          cmd: '--new-window'          
+      }, 
+   },
+   {
+      browserName: 'firefox',
+      browserInfo: {
+          path: '<path_to_firefox_dir>\\firefox.exe',
+          cmd: '-new-window'
+      }
+   }
+];
+
+var CLI_SETTINGS = { 
+    browsers: BROWSERS, 
+    timeout: 60 //sec
+};
+
+qunitHarness
+    .cli(CLI_SETTINGS)
+    .tests(['/tests/test1-test.js', '/tests/test2-test.js'])
+    .run()
+    .then(function () {
+        console.log('Tests done');
+    })
+    .catch(function (err) {
+        console.log(err);
+    });
+
 ```
 
 ## QUnit tests
