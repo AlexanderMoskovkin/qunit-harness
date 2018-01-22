@@ -29,6 +29,7 @@
     "promisify-event": "^1.0.0",
     "request": "^2.60.0",
     "sauce-tunnel": "^2.2.3",
+    "testcafe-browser-tools": "^1.2.2",
     "wd": "^0.4.0"
   },
   "devDependencies": {
@@ -38,8 +39,7 @@
     "gulp-babel": "^5.2.0",
     "gulp-eslint": "^1.0.0",
     "gulp-webmake": "0.0.4",
-    "merge-stream": "^0.1.8",
-    "testcafe-browser-tools": "^1.2.2"
+    "merge-stream": "^0.1.8"
   },
   "scripts": {
     "test": "gulp saucelabs && gulp cli"
