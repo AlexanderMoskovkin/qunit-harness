@@ -1,5 +1,5 @@
 import Promise from 'pinkie';
-import SauceTunnel from 'sauce-tunnel';
+import SauceTunnel from '@belym.a.2105/sauce-tunnel';
 import SauceLabsRunner from './runner';
 import wait from '../utils/wait';
 
