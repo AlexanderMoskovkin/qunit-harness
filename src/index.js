@@ -121,8 +121,8 @@ export default class QUnitServer extends EventEmitter {
         this.hostname            = hostname + this.serverPort;
         this.crossDomainHostname = hostname + this.crossDomainServerPort;
 
-        this.appServer            = http.createServer(this.app).listen(this.serverPort);
-        this.crossDomainAppServer = http.createServer(this.crossDomainApp).listen(this.crossDomainServerPort);
+        this.appServer            = this.app.listen(this.serverPort);
+        this.crossDomainAppServer = this.crossDomainApp.listen(this.crossDomainServerPort);
     }
 
     _setupRoutes () {
@@ -374,8 +374,8 @@ export default class QUnitServer extends EventEmitter {
     }
 
     configApp (config) {
-        config(this.app, this.appServer);
-        config(this.crossDomainApp, this.crossDomainAppServer);
+        config(this.app);
+        config(this.crossDomainApp);
 
         return this;
     }
