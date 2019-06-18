@@ -374,8 +374,8 @@ export default class QUnitServer extends EventEmitter {
     }
 
     configApp (config) {
-        config(this.app);
-        config(this.crossDomainApp);
+        config(this.app, this.appServer);
+        config(this.crossDomainApp, this.crossDomainAppServer);
 
         return this;
     }
