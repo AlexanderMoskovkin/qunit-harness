@@ -402,7 +402,7 @@ export default class QUnitServer extends EventEmitter {
             tags:      settings.tags || curSettings.tags || 'master',
             browsers:  settings.browsers || curSettings.browsers || {},
             name:      settings.name || curSettings.name || 'QUnit tests',
-            urls:      [this.localhostname + '/start'],
+            urls:      [this.hostname + '/start'],
             timeout:   settings.timeout || curSettings.timeout || 30
         };
 
