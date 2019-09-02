@@ -58,16 +58,20 @@ export default class Job {
     }
 
     async _runWorker () {
+        let promiseResolver = null;
+
         try {
+            this.testServer.on('startedWorker', (browserName, id) => {
+                if (this.id === browserName)
+                    this.sessionID = id;
+
+                promiseResolver();
+            });
+
             await open(this.browserInfo, `${this.options.startUrl[0]}?browserName=${encodeURIComponent(this.id)}`);
 
             return new Promise(resolve => {
-                this.testServer.on('startedWorker', (browserName, id) => {
-                    if (this.id === browserName)
-                        this.sessionID = id;
-
-                    resolve();
-                });
+                promiseResolver = resolve;
             });
         }
 
