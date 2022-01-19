@@ -1,8 +1,8 @@
 import wd from 'wd';
-import promisifyEvent from 'promisify-event'
 import { assign } from 'lodash';
 import SaucelabsRequestAdapter from './request';
 import wait from '../utils/wait';
+import isSafari15 from '../utils/is-safari-15';
 
 
 const CHECK_TEST_RESULT_DELAY  = 10 * 1000;
@@ -10,6 +10,10 @@ const MAX_JOB_RESTART_COUNT    = 3;
 const BROWSER_INIT_RETRY_DELAY = 30 * 1000;
 const BROWSER_INIT_RETRIES     = 3;
 const BROWSER_INIT_TIMEOUT     = 9 * 60 * 1000;
+
+// NOTE: Saucelabs cannot start tests in Safari 15 immediately.
+// So, we are forced to add delay before test execution.
+const TEST_RUN_DELAY_FOR_SAFARI_15 = 30 * 1000;
 
 
 wd.configureHttp({
@@ -147,15 +151,16 @@ export default class Job {
         this.status = Job.STATUSES.INIT_BROWSER;
 
         try {
-            var initBrowserPromise = promisifyEvent(this.browser, 'status');
+            await this.browser.init(initBrowserParams);
 
-            this.browser.init(initBrowserParams);
+            if (isSafari15(initBrowserParams))
+                await wait(TEST_RUN_DELAY_FOR_SAFARI_15);
 
-            await initBrowserPromise;
             await this.browser.get(this.options.urls[0]);
         }
         catch (error) {
-            this._reportError(`An error occured while the browser was being initialized: ${error}`);
+            this._reportError(`An error occurred while the browser was being initialized: ${error}`);
+
             jobFailed = true;
         }
 
