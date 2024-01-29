@@ -1,27 +1,18 @@
-import wd from 'wd';
+import WebDriver from 'webdriver';
 import { assign } from 'lodash';
 import SaucelabsRequestAdapter from './request';
 import wait from '../utils/wait';
 import isSafari15 from '../utils/is-safari-15';
 
 
-const CHECK_TEST_RESULT_DELAY  = 10 * 1000;
-const MAX_JOB_RESTART_COUNT    = 3;
-const BROWSER_INIT_RETRY_DELAY = 30 * 1000;
-const BROWSER_INIT_RETRIES     = 3;
-const BROWSER_INIT_TIMEOUT     = 9 * 60 * 1000;
+const CHECK_TEST_RESULT_DELAY = 10 * 1000;
+const MAX_JOB_RESTART_COUNT   = 3;
+const BROWSER_INIT_RETRIES    = 3;
+const BROWSER_INIT_TIMEOUT    = 9 * 60 * 1000;
 
 // NOTE: Saucelabs cannot start tests in Safari 15 immediately.
 // So, we are forced to add delay before test execution.
 const TEST_RUN_DELAY_FOR_SAFARI_15 = 30 * 1000;
-
-
-wd.configureHttp({
-    retryDelay: BROWSER_INIT_RETRY_DELAY,
-    retries:    BROWSER_INIT_RETRIES,
-    timeout:    BROWSER_INIT_TIMEOUT
-});
-
 
 //Job
 export default class Job {
@@ -39,7 +30,8 @@ export default class Job {
 
         this.requestAdapter = new SaucelabsRequestAdapter(this.options.username, this.options.accessKey);
         this.browserInfo    = browserInfo;
-        this.browser        = wd.promiseRemote('ondemand.saucelabs.com', 80, options.username, options.accessKey);
+        
+        this.browser        = null;
 
         this.status         = Job.STATUSES.INITIALIZED;
         this.restartCount   = 0;
@@ -70,7 +62,7 @@ export default class Job {
             await(wait(CHECK_TEST_RESULT_DELAY));
 
             try {
-                testResult = await this.browser.eval('window.global_test_results');
+                testResult = await this.browser.executeScript('return window.global_test_results', []);
             }
             catch (error) {
                 var windowErrorMessage = 'window has no properties';
@@ -88,7 +80,6 @@ export default class Job {
                     throw error;
             }
         }
-
         return testResult;
     }
 
@@ -109,10 +100,10 @@ export default class Job {
         }
 
         return {
-            url:      `https://saucelabs.com/jobs/${this.browser.sessionID}`,
+            url:      `https://saucelabs.com/jobs/${this.browser.sessionId}`,
             platform: this.platform,
             result:   testResult,
-            job_id:   this.browser.sessionID
+            job_id:   this.browser.sessionId
         };
     }
 
@@ -132,7 +123,7 @@ export default class Job {
             }
         };
 
-        await this.requestAdapter.put(`/v1/${this.options.username}/jobs/${this.browser.sessionID}`, data);
+        await this.requestAdapter.put(`/v1/${this.options.username}/jobs/${this.browser.sessionId}`, data);
     }
 
     async run () {
@@ -151,12 +142,24 @@ export default class Job {
         this.status = Job.STATUSES.INIT_BROWSER;
 
         try {
-            await this.browser.init(initBrowserParams);
+            this.browser = await WebDriver.newSession({
+                protocol:               'http',
+                hostname:               'ondemand.saucelabs.com',
+                port:                   80,
+                user:                   this.options.username,
+                key:                    this.options.accessKey,
+                capabilities:           initBrowserParams,
+                logLevel:               'error',
+                connectionRetryTimeout: BROWSER_INIT_TIMEOUT,
+                connectionRetryCount:   BROWSER_INIT_RETRIES,
+                path:                   '/wd/hub',
+                automationProtocol:     'webdriver'
+            });
 
             if (isSafari15(initBrowserParams))
                 await wait(TEST_RUN_DELAY_FOR_SAFARI_15);
 
-            await this.browser.get(this.options.urls[0]);
+            await this.browser.navigateTo(this.options.urls[0]);
         }
         catch (error) {
             this._reportError(`An error occurred while the browser was being initialized: ${error}`);
@@ -174,7 +177,7 @@ export default class Job {
             }
 
             try {
-                await this.browser.quit();
+                await this.browser.deleteSession();
             }
             catch (error) {
                 this._reportError(`An error occured while the browser was being closed: ${error}`);
@@ -190,11 +193,11 @@ export default class Job {
             else {
                 jobResult = {
                     platform: this.platform,
-                    job_id:   this.browser.sessionID
+                    job_id:   this.browser.sessionId
                 };
 
                 if (this.status === Job.STATUSES.IN_PROGRESS)
-                    jobResult.url = `https://saucelabs.com/jobs/${this.browser.sessionID}`;
+                    jobResult.url = `https://saucelabs.com/jobs/${this.browser.sessionId}`;
 
                 this.status = Job.STATUSES.FAILED;
             }

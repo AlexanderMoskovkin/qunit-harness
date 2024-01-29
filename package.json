@@ -17,7 +17,7 @@
     "node": ">= 0.10"
   },
   "dependencies": {
-    "@belym.a.2105/sauce-tunnel": "^2.5.2",
+    "@belym.a.2105/sauce-tunnel": "3.0.0",
     "babel-runtime": "^5.8.20",
     "body-parser": "^1.13.3",
     "chalk": "^1.1.0",
@@ -28,9 +28,8 @@
     "pify": "^2.3.0",
     "pinkie": "^2.0.1",
     "promisify-event": "^1.0.0",
-    "request": "^2.60.0",
     "testcafe-browser-tools": "^1.2.2",
-    "wd": "^1.9.0"
+    "webdriver": "^7.31.1"
   },
   "devDependencies": {
     "babel-eslint": "^4.0.5",

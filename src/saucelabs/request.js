@@ -1,8 +1,4 @@
-import Promise from 'pinkie';
-import request from 'request';
-import promisify from 'pify';
-
-var requestPromised = promisify(request, Promise);
+import { httpsRequest } from './https-request';
 
 export default class SaucelabsRequestAdapter {
     constructor (user, pass) {
@@ -17,18 +13,18 @@ export default class SaucelabsRequestAdapter {
         CONCURRENCY: 'concurrency'
     };
 
-    async _request (params) {
-        var result = await requestPromised(params);
+    async _request (params, data) {
+        var result = await httpsRequest(params, data);
 
         var statusCode = result.statusCode;
         var body       = result.body;
 
-        if (statusCode === 200)
+        if (statusCode >= 200 && statusCode <= 299)
             return body;
 
         throw [
             'Unexpected response from the Sauce Labs API.',
-            params.method + ' ' + params.url,
+            params.method + ' ' + params.hostname,
             'Response status: ' + statusCode,
             'Body: ' + JSON.stringify(body)
         ].join('\n');
@@ -36,22 +32,24 @@ export default class SaucelabsRequestAdapter {
 
     async put (url, data) {
         var params = {
-            method:  'PUT',
-            uri:     ['https://', this.user, ':', this.pass, '@saucelabs.com/rest', url].join(''),
-            headers: { 'Content-Type': 'application/json' },
-            body:    JSON.stringify(data)
-        };
+            method:   'PUT',
+            hostname: `saucelabs.com`,
+            path:     `/rest/${url}`,
+            headers:  { 'Content-Type': 'application/json' },
+            auth:     this.user + ':' + this.pass
+        }
 
-        return await this._request(params);
+        return await this._request(params, JSON.stringify(data));
     }
 
     async get (url) {
         var params = {
-            method:  'GET',
-            uri:     `https://saucelabs.com/rest/v1.1/users/${this.user}/${url}`,
-            headers: { 'Content-Type': 'application/json' },
-            auth:    { user: this.user, pass: this.pass }
-        };
+            method:   'GET',
+            hostname: `saucelabs.com`,
+            path:     `/rest/v1.1/users/${this.user}/${url}`,
+            headers:  { 'Content-Type': 'application/json' },
+            auth:     this.user + ':' + this.pass
+        }
 
         var body = await this._request(params);
 
