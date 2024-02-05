@@ -1,4 +1,5 @@
 import WebDriver from 'webdriver';
+import { WebDriverProtocol } from '@wdio/protocols'
 import { assign } from 'lodash';
 import SaucelabsRequestAdapter from './request';
 import wait from '../utils/wait';
@@ -140,6 +141,10 @@ export default class Job {
         assign(initBrowserParams, this.browserInfo);
 
         this.status = Job.STATUSES.INIT_BROWSER;
+
+        var executeCommand = WebDriverProtocol['/session/:sessionId/execute/sync'];
+        
+        WebDriverProtocol[`/session/:sessionId/execute`] = executeCommand;
 
         try {
             this.browser = await WebDriver.newSession({

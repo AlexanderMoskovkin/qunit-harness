@@ -21,7 +21,7 @@
         "pinkie": "^2.0.1",
         "promisify-event": "^1.0.0",
         "testcafe-browser-tools": "^1.2.2",
-        "webdriver": "^7.31.1"
+        "webdriver": "^7.33.0"
       },
       "devDependencies": {
         "babel-eslint": "^4.0.5",
@@ -318,9 +318,9 @@
       }
     },
     "node_modules/@wdio/types/node_modules/@types/node": {
-      "version": "18.19.10",
-      "resolved": "https://registry.npmjs.org/@types/node/-/node-18.19.10.tgz",
-      "integrity": "sha512-IZD8kAM02AW1HRDTPOlz3npFava678pr8Ie9Vp8uRhBROXAv8MXT2pCnGZZAKYdromsNQLHQcfWQ6EOatVLtqA==",
+      "version": "18.19.12",
+      "resolved": "https://registry.npmjs.org/@types/node/-/node-18.19.12.tgz",
+      "integrity": "sha512-uLcpWEAvatBEubmgCMzWforZbAu1dT9syweWnU3/DNwbeUBq2miP5nG8Y4JL9MDMKWt+7Yv1CSvA8xELdEl54w==",
       "dependencies": {
         "undici-types": "~5.26.4"
       }
@@ -7134,9 +7134,9 @@
       }
     },
     "node_modules/webdriver/node_modules/@types/node": {
-      "version": "18.19.10",
-      "resolved": "https://registry.npmjs.org/@types/node/-/node-18.19.10.tgz",
-      "integrity": "sha512-IZD8kAM02AW1HRDTPOlz3npFava678pr8Ie9Vp8uRhBROXAv8MXT2pCnGZZAKYdromsNQLHQcfWQ6EOatVLtqA==",
+      "version": "18.19.12",
+      "resolved": "https://registry.npmjs.org/@types/node/-/node-18.19.12.tgz",
+      "integrity": "sha512-uLcpWEAvatBEubmgCMzWforZbAu1dT9syweWnU3/DNwbeUBq2miP5nG8Y4JL9MDMKWt+7Yv1CSvA8xELdEl54w==",
       "dependencies": {
         "undici-types": "~5.26.4"
       }

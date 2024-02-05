@@ -29,7 +29,7 @@
     "pinkie": "^2.0.1",
     "promisify-event": "^1.0.0",
     "testcafe-browser-tools": "^1.2.2",
-    "webdriver": "^7.31.1"
+    "webdriver": "^7.33.0"
   },
   "devDependencies": {
     "babel-eslint": "^4.0.5",
