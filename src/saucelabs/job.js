@@ -11,6 +11,9 @@ const MAX_JOB_RESTART_COUNT   = 3;
 const BROWSER_INIT_RETRIES    = 3;
 const BROWSER_INIT_TIMEOUT    = 9 * 60 * 1000;
 
+const SAUCE_API_HOST = 'saucelabs.com';
+const SAUCE_API_PORT = 80;
+
 // NOTE: Saucelabs cannot start tests in Safari 15 immediately.
 // So, we are forced to add delay before test execution.
 const TEST_RUN_DELAY_FOR_SAFARI_15 = 30 * 1000;
@@ -31,7 +34,6 @@ export default class Job {
 
         this.requestAdapter = new SaucelabsRequestAdapter(this.options.username, this.options.accessKey);
         this.browserInfo    = browserInfo;
-        
         this.browser        = null;
 
         this.status         = Job.STATUSES.INITIALIZED;
@@ -101,7 +103,7 @@ export default class Job {
         }
 
         return {
-            url:      `https://saucelabs.com/jobs/${this.browser.sessionId}`,
+            url:      `https://${SAUCE_API_HOST}/jobs/${this.browser.sessionId}`,
             platform: this.platform,
             result:   testResult,
             job_id:   this.browser.sessionId
@@ -149,8 +151,8 @@ export default class Job {
         try {
             this.browser = await WebDriver.newSession({
                 protocol:               'http',
-                hostname:               'ondemand.saucelabs.com',
-                port:                   80,
+                hostname:               `ondemand.${SAUCE_API_HOST}`,
+                port:                   SAUCE_API_PORT,
                 user:                   this.options.username,
                 key:                    this.options.accessKey,
                 capabilities:           initBrowserParams,
@@ -202,7 +204,7 @@ export default class Job {
                 };
 
                 if (this.status === Job.STATUSES.IN_PROGRESS)
-                    jobResult.url = `https://saucelabs.com/jobs/${this.browser.sessionId}`;
+                    jobResult.url = `https://${SAUCE_API_HOST}/jobs/${this.browser.sessionId}`;
 
                 this.status = Job.STATUSES.FAILED;
             }
