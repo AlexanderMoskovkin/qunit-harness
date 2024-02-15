@@ -43,5 +43,8 @@
   "scripts": {
     "test": "gulp saucelabs && gulp cli"
   },
-  "main": "./lib/index"
+  "main": "./lib/index",
+  "overrides": {
+    "graceful-fs": "^4.2.11"
+  }
 }
