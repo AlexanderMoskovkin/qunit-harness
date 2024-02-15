@@ -1,12 +1,12 @@
 {
   "name": "qunit-harness",
-  "version": "1.3.12",
+  "version": "1.3.13",
   "lockfileVersion": 3,
   "requires": true,
   "packages": {
     "": {
       "name": "qunit-harness",
-      "version": "1.3.12",
+      "version": "1.3.13",
       "license": "MIT",
       "dependencies": {
         "@belym.a.2105/sauce-tunnel": "3.0.0",
