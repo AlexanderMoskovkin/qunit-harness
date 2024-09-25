@@ -33,7 +33,7 @@ export default class SaucelabsRequestAdapter {
     async put (url, data) {
         var params = {
             method:   'PUT',
-            hostname: `saucelabs.com`,
+            hostname: `api.us-west-1.saucelabs.com`,
             path:     `/rest/${url}`,
             headers:  { 'Content-Type': 'application/json' },
             auth:     this.user + ':' + this.pass
@@ -45,8 +45,8 @@ export default class SaucelabsRequestAdapter {
     async get (url) {
         var params = {
             method:   'GET',
-            hostname: `saucelabs.com`,
-            path:     `/rest/v1.1/users/${this.user}/${url}`,
+            hostname: `api.us-west-1.saucelabs.com`,
+            path:     `/rest/v1.2/users/${this.user}/${url}`,
             headers:  { 'Content-Type': 'application/json' },
             auth:     this.user + ':' + this.pass
         }
