@@ -10,6 +10,7 @@ import readDir from './utils/read-dir';
 import getTests from './utils/get-tests';
 import pathToUrl from './utils/path-to-url';
 import { EventEmitter } from 'events';
+import ip from 'ip';
 
 import * as saucelabs from './saucelabs/saucelabs';
 import * as cli from './cli';
@@ -116,7 +117,7 @@ export default class QUnitServer extends EventEmitter {
     _createServers () {
         this.localhostname = 'http://localhost:' + this.serverPort;
 
-        var hostname = process.env.TRAVIS ? `http://${os.hostname()}:` : 'http://localhost:';
+        var hostname = `http://${ip.address()}:`;
 
         this.hostname            = hostname + this.serverPort;
         this.crossDomainHostname = hostname + this.crossDomainServerPort;
@@ -428,7 +429,7 @@ export default class QUnitServer extends EventEmitter {
         this._createServers();
         this._setupRoutes();
 
-        console.log('QUnit server listens on', this.hostname);
+        console.log('QUnit server listens on', this.localhostname);
 
         if (typeof this.beforeCallback === 'function')
             this.beforeCallback();
